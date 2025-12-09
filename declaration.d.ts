@@ -26,6 +26,9 @@ declare type INITIAL_STATE = {
   touchDiceBlock: boolean;
   currentPosition: PLAYER_PIECE[];
   fireworks: boolean;
-  winner: any;
+  winners: number[];
+  finalWinner: number | null;
+  totalPlayers: number;
+  activePlayers: number[];
 }
 

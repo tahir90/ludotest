@@ -5,7 +5,7 @@ import { IMAGES } from '$assets/images'
 import { styles } from './styles'
 import GradientButton from '$components/GradientButton'
 import { useAppDispatch } from '$hooks/useAppStore'
-import { resetGame } from '$redux/reducers/gameSlice'
+import { resetGame, setTotalPlayers } from '$redux/reducers/gameSlice'
 import { playSound, stopSound } from '$helpers/SoundUtils'
 import { useSelector } from 'react-redux'
 import { selectCurrentPosition } from '$redux/reducers/gameSelectors'
@@ -113,21 +113,32 @@ const HomeScreen = () => {
     )
   }, [])
 
-  const startGame = async (e: boolean = false) => {
+  const startGame = async (e: boolean = false, playerCount?: number) => {
     stopSound();
     if (e) {
       dispatch(resetGame());
+      if (playerCount) {
+        dispatch(setTotalPlayers(playerCount));
+      }
     }
     navigate('LudoBoardScreen', {});
     playSound('game_start');
   };
 
   const handleNewGame = useCallback(() => {
-    startGame(true)
+    startGame(true, 4) // Default 4 players
   }, []);
 
   const handleResumeGame = useCallback(() => {
     startGame(false);
+  }, []);
+
+  const handle2Players = useCallback(() => {
+    startGame(true, 2);
+  }, []);
+
+  const handle3Players = useCallback(() => {
+    startGame(true, 3);
   }, []);
 
   const handleCoomingSoon = useCallback(() => {
@@ -146,6 +157,8 @@ const HomeScreen = () => {
 
       {currentPosition.length !== 0 && renderButton("RESUME", handleResumeGame)}
       {renderButton("NEW GAME", handleNewGame)}
+      {renderButton("2 Players", handle2Players)}
+      {renderButton("3 Players", handle3Players)}
       {renderButton("VS Computer", handleCoomingSoon)}
       {renderButton("2 vs 2", handleCoomingSoon)}
 
@@ -171,8 +184,6 @@ const HomeScreen = () => {
           />
         </Pressable>
       </Animated.View>
-
-      <Text style={styles.labelStyle}>Made by - Nayan</Text>
     </Wrapper>
   )
 }

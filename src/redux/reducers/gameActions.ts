@@ -109,8 +109,6 @@ export const handleForwardThunk = (playerNo: number, id: string, pos: number) =>
         }
 
         if (diceNo == 6 || travelCount == 57) {
-            dispatch(updatePlayerChance({ chancePlayer: playerNo }))
-
             if (travelCount == 57) {
                 playSound('home_win');
                 const finalPlayerState = getState();
@@ -120,18 +118,56 @@ export const handleForwardThunk = (playerNo: number, id: string, pos: number) =>
                     dispatch(unfreezeDice());
                     dispatch(announceWinner(playerNo))
                     playSound('cheer');
+                    
+                    // Check if game should end
+                    const updatedState = getState();
+                    if (updatedState.game.finalWinner !== null) {
+                        // Game ended - don't continue
+                        return;
+                    }
+                    
+                    // Game continues - skip this player and move to next non-winning player
+                    const winners = updatedState.game.winners;
+                    const activePlayers = updatedState.game.activePlayers;
+                    const currentIndex = activePlayers.indexOf(playerNo);
+                    let nextIndex = (currentIndex + 1) % activePlayers.length;
+                    let nextPlayer = activePlayers[nextIndex];
+                    
+                    // Find next active, non-winning player
+                    let attempts = 0;
+                    while (winners.includes(nextPlayer) && attempts < activePlayers.length) {
+                        nextIndex = (nextIndex + 1) % activePlayers.length;
+                        nextPlayer = activePlayers[nextIndex];
+                        attempts++;
+                    }
+                    
+                    dispatch(updatePlayerChance({ chancePlayer: nextPlayer }));
                     return;
                 }
 
                 dispatch(updateFireworks(true));
                 dispatch(unfreezeDice());
+                // Player gets another turn for rolling 6 or reaching home
+                dispatch(updatePlayerChance({ chancePlayer: playerNo }));
                 return;
             }
         } else {
-            let chancePlayer: number = playerNo + 1;
-            if (chancePlayer > 4) {
-                chancePlayer = 1;
+            // Skip winning players in turn rotation
+            const currentState = getState();
+            const winners = currentState.game.winners;
+            const activePlayers = currentState.game.activePlayers;
+            const currentIndex = activePlayers.indexOf(playerNo);
+            let nextIndex = (currentIndex + 1) % activePlayers.length;
+            let chancePlayer = activePlayers[nextIndex];
+            
+            // Find next active, non-winning player
+            let attempts = 0;
+            while (winners.includes(chancePlayer) && attempts < activePlayers.length) {
+                nextIndex = (nextIndex + 1) % activePlayers.length;
+                chancePlayer = activePlayers[nextIndex];
+                attempts++;
             }
+            
             dispatch(updatePlayerChance({ chancePlayer }))
         }
     }

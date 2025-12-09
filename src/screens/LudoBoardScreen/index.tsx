@@ -11,7 +11,7 @@ import { plot1data, plot2data, plot3data, plot4data } from '$helpers/PlotData'
 import HorizontalPath from '$components/HorizontalPath'
 import FourTriangle from '$components/FourTriangle'
 import { useAppSelector } from '$hooks/useAppStore'
-import { selectDiceTouch, selectPlayer1, selectPlayer2, selectPlayer3, selectPlayer4, selectWinner } from '$redux/reducers/gameSelectors'
+import { selectDiceTouch, selectPlayer1, selectPlayer2, selectPlayer3, selectPlayer4, selectFinalWinner, selectTotalPlayers, selectActivePlayers } from '$redux/reducers/gameSelectors'
 import { useIsFocused } from '@react-navigation/native';
 import { DEVICE_HEIGHT, DEVICE_WIDTH } from '$constants/dimensions'
 import MenuModal from '$components/MenuModal'
@@ -24,7 +24,9 @@ const LudoBoardScreen = () => {
   const player3 = useAppSelector(selectPlayer3);
   const player4 = useAppSelector(selectPlayer4);
   const isDiceTouched = useAppSelector(selectDiceTouch);
-  const winner = useAppSelector(selectWinner);
+  const finalWinner = useAppSelector(selectFinalWinner);
+  const totalPlayers = useAppSelector(selectTotalPlayers);
+  const activePlayers = useAppSelector(selectActivePlayers);
 
   const isFocused = useIsFocused();
 
@@ -125,7 +127,7 @@ const LudoBoardScreen = () => {
       }
 
       {
-        winner !== null && <WinnerModal winner={winner} />
+        finalWinner !== null && <WinnerModal winner={finalWinner} />
       }
     </Wrapper>
   )

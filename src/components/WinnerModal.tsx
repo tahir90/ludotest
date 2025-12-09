@@ -7,7 +7,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import LottieView from 'lottie-react-native';
 import GradientButton from './GradientButton';
 import Pile from './Pile';
-import { announceWinner, resetGame } from '../redux/reducers/gameSlice';
+import { announceWinner, resetGame, setTotalPlayers } from '../redux/reducers/gameSlice';
 import { playSound } from '$helpers/SoundUtils';
 import { resetAndNavigate } from '$helpers/navigationUtils';
 import { ANIMATATIONS } from '$assets/animation';
@@ -24,13 +24,11 @@ const WinnerModal: React.FC<{ winner: any }> = ({ winner }) => {
 
     const handleNewGame = () => {
         dispatch(resetGame());
-        dispatch(announceWinner(null));
         playSound('game_start');
     };
 
     const handleHome = () => {
         dispatch(resetGame());
-        dispatch(announceWinner(null));
         resetAndNavigate('HomeScreen');
     };
 
@@ -53,7 +51,13 @@ const WinnerModal: React.FC<{ winner: any }> = ({ winner }) => {
             >
                 <View style={styles.content}>
                     <View style={styles.pileContainer}>
-                        <Pile player={1} color={COLORS.borderColor} />
+                        <Pile 
+                            player={winner} 
+                            color={winner === 1 ? COLORS.red : winner === 2 ? COLORS.green : winner === 3 ? COLORS.yellow : COLORS.blue}
+                            cell={false}
+                            pieceId={`${winner === 1 ? 'A' : winner === 2 ? 'B' : winner === 3 ? 'C' : 'D'}1`}
+                            onPress={() => {}}
+                        />
                     </View>
 
                     <Text style={styles.congratsText}> Congratulations! PLAYER {winner}</Text>

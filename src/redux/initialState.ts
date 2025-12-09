@@ -39,5 +39,8 @@ export const initialState : INITIAL_STATE = {
     touchDiceBlock: false,
     currentPosition: [],
     fireworks: false,
-    winner: null
+    winners: [],
+    finalWinner: null,
+    totalPlayers: 4,
+    activePlayers: [1, 2, 3, 4]
 }

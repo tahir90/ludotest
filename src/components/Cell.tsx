@@ -6,7 +6,7 @@ import { arrowSpots, safeSpots, starSpots } from '$helpers/PlotData';
 import { StarIcon, ArrowRightIcon } from 'react-native-heroicons/outline';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useAppDispatch, useAppSelector } from '$hooks/useAppStore';
-import { selectCurrentPosition } from '$redux/reducers/gameSelectors';
+import { selectCurrentPosition, selectActivePlayers } from '$redux/reducers/gameSelectors';
 import { handleForwardThunk } from '$redux/reducers/gameActions';
 
 interface CellProps {
@@ -20,6 +20,7 @@ const Cell: React.FC<CellProps> = ({ id, cell, color, player }) => {
 
     const dispatch = useAppDispatch();
     const plotedPieces = useAppSelector(selectCurrentPosition);
+    const activePlayers = useAppSelector(selectActivePlayers);
 
     const isSafeSpot = useMemo(() => safeSpots.includes(id), [id]);
     const isStarSpot = useMemo(() => starSpots.includes(id), [id]);
@@ -39,7 +40,13 @@ const Cell: React.FC<CellProps> = ({ id, cell, color, player }) => {
         >
             {isStarSpot && <StarIcon size={20} color={COLORS.grey} />}
             {isArrowSpot && <ArrowRightIcon size={RFValue(12)} color={COLORS.grey} style={{ transform: [{ rotate: arrowValue }] }} />}
-            {peicesAtPosition.map((piece, index) => {
+            {peicesAtPosition
+                .filter((piece) => {
+                    // Only show tokens for active players
+                    const playerNo = piece.id[0] === "A" ? 1 : piece.id[0] === "B" ? 2 : piece.id[0] === "C" ? 3 : 4;
+                    return activePlayers.includes(playerNo);
+                })
+                .map((piece, index) => {
 
                 const playerNo = piece.id[0] === "A" ? 1 : piece.id[0] === "B" ? 2 : piece.id[0] === "C" ? 3 : 4;
                 const pieceColor = piece.id[0] === "A" ? COLORS.red : piece.id[0] === "B" ? COLORS.green : piece.id[0] === "C" ? COLORS.yellow : COLORS.blue;

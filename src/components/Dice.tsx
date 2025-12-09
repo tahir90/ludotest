@@ -6,7 +6,7 @@ import LottieView from 'lottie-react-native';
 import { ANIMATATIONS } from '$assets/animation';
 import { IMAGES } from '$assets/images';
 import { useAppDispatch, useAppSelector } from '$hooks/useAppStore';
-import { selectCurrentPlayerChance, selectDiceNo, selectDiceRolled } from '$redux/reducers/gameSelectors';
+import { selectCurrentPlayerChance, selectDiceNo, selectDiceRolled, selectWinners, selectTotalPlayers, selectFinalWinner, selectActivePlayers } from '$redux/reducers/gameSelectors';
 import { enableCellSelection, enablePileSelection, updateDiceNumber, updatePlayerChance } from '$redux/reducers/gameSlice';
 import { playSound } from '$helpers/SoundUtils';
 
@@ -24,6 +24,10 @@ const Dice: React.FC<DiceProps> = ({ color, rotate, player, data }) => {
     const currentPlayerChance = useAppSelector(selectCurrentPlayerChance);
     const isDiceRolled = useAppSelector(selectDiceRolled);
     const diceNo = useAppSelector(selectDiceNo);
+    const winners = useAppSelector(selectWinners);
+    const totalPlayers = useAppSelector(selectTotalPlayers);
+    const activePlayers = useAppSelector(selectActivePlayers);
+    const finalWinner = useAppSelector(selectFinalWinner);
     const playerPieces: PLAYER_PIECE[] = useAppSelector((state: any) => state.game[`player${currentPlayerChance}`])
 
     const pileIcon = BackgroundImage.getImage(color);
@@ -73,10 +77,19 @@ const Dice: React.FC<DiceProps> = ({ color, rotate, player, data }) => {
             if (diceNumber === 6) {
                 dispatch(enablePileSelection({ playerNo: player }))
             } else {
-                let chancePlayer = player + 1;
-                if (chancePlayer > 4) {
-                    chancePlayer = 1;
+                // Skip winning players in turn rotation
+                const currentIndex = activePlayers.indexOf(player);
+                let nextIndex = (currentIndex + 1) % activePlayers.length;
+                let chancePlayer = activePlayers[nextIndex];
+                
+                // Find next active, non-winning player
+                let attempts = 0;
+                while (winners.includes(chancePlayer) && attempts < activePlayers.length) {
+                    nextIndex = (nextIndex + 1) % activePlayers.length;
+                    chancePlayer = activePlayers[nextIndex];
+                    attempts++;
                 }
+                
                 await delay(600);
                 dispatch(updatePlayerChance({ chancePlayer }))
             }
@@ -88,10 +101,19 @@ const Dice: React.FC<DiceProps> = ({ color, rotate, player, data }) => {
                 (!canMove && diceNumber !== 6 && isAnyPieceLocked != -1) ||
                 (!canMove && diceNumber !== 6 && isAnyPieceLocked == -1)
             ) {
-                let chancePlayer = player + 1;
-                if (chancePlayer > 4) {
-                    chancePlayer = 1;
+                // Skip winning players in turn rotation
+                const currentIndex = activePlayers.indexOf(player);
+                let nextIndex = (currentIndex + 1) % activePlayers.length;
+                let chancePlayer = activePlayers[nextIndex];
+                
+                // Find next active, non-winning player
+                let attempts = 0;
+                while (winners.includes(chancePlayer) && attempts < activePlayers.length) {
+                    nextIndex = (nextIndex + 1) % activePlayers.length;
+                    chancePlayer = activePlayers[nextIndex];
+                    attempts++;
                 }
+                
                 await delay(600);
                 dispatch(updatePlayerChance({ chancePlayer }))
                 return
@@ -132,7 +154,7 @@ const Dice: React.FC<DiceProps> = ({ color, rotate, player, data }) => {
                     end={{ x: 1, y: 0.5 }}
                 >
                     <View style={styles.diceContainer}>
-                        {((currentPlayerChance === player) && !diceRolling) && (
+                        {((currentPlayerChance === player) && !diceRolling && finalWinner === null && !winners.includes(player) && activePlayers.includes(player)) && (
                             <TouchableOpacity
                                 disabled={isDiceRolled}
                                 activeOpacity={0.5}
@@ -161,7 +183,7 @@ const Dice: React.FC<DiceProps> = ({ color, rotate, player, data }) => {
                 />
             }
 
-            {((currentPlayerChance === player) && !isDiceRolled) &&
+            {((currentPlayerChance === player) && !isDiceRolled && finalWinner === null && !winners.includes(player) && activePlayers.includes(player)) &&
                 <Animated.View style={{ transform: [{ translateX: arrowAnimation }] }}>
                     <Image
                         source={IMAGES.Arrow}

@@ -20,7 +20,6 @@ const MenuModal: React.FC<MenuModalProps> = ({ visible, onPressHide }) => {
     const handleNewGame = useCallback(() => {
         dispatch(resetGame());
         playSound('game_start');
-        dispatch(announceWinner(null))
         onPressHide();
     }, []);
 

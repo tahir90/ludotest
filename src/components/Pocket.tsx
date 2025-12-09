@@ -2,9 +2,10 @@ import { StyleSheet, View } from 'react-native'
 import React, { memo, useCallback } from 'react'
 import { COLORS } from '$constants/colors';
 import Pile from './Pile';
-import { useAppDispatch } from '$hooks/useAppStore';
+import { useAppDispatch, useAppSelector } from '$hooks/useAppStore';
 import { unfreezeDice, updatePlayerPieceValue } from '$redux/reducers/gameSlice';
 import { startingPoints } from '$helpers/PlotData';
+import { selectActivePlayers } from '$redux/reducers/gameSelectors';
 
 interface PocketProps {
     color: string;
@@ -23,6 +24,11 @@ interface PlotProps {
 const Pocket: React.FC<PocketProps> = ({ color, player, data }) => {
 
     const dispatch = useAppDispatch();
+    const activePlayers = useAppSelector(selectActivePlayers);
+    
+    // For inactive players, show structure but no tokens
+    const isActive = activePlayers.includes(player);
+    const displayData = isActive ? data : []; // Empty data for inactive players
 
     const handlePress = useCallback((value: PLAYER_PIECE) => {
         let playerNo: any = value.id.at(0);
@@ -60,14 +66,14 @@ const Pocket: React.FC<PocketProps> = ({ color, player, data }) => {
                         pieceNo={0}
                         player={player}
                         color={color}
-                        data={data}
+                        data={displayData}
                         onPress={handlePress}
                     />
                     <Plot
                         pieceNo={1}
                         player={player}
                         color={color}
-                        data={data}
+                        data={displayData}
                         onPress={handlePress}
                     />
                 </View>
@@ -76,14 +82,14 @@ const Pocket: React.FC<PocketProps> = ({ color, player, data }) => {
                         pieceNo={2}
                         player={player}
                         color={color}
-                        data={data}
+                        data={displayData}
                         onPress={handlePress}
                     />
                     <Plot
                         pieceNo={3}
                         player={player}
                         color={color}
-                        data={data}
+                        data={displayData}
                         onPress={handlePress}
                     />
                 </View>

@@ -4,7 +4,10 @@ export const selectCurrentPosition = (state: RootState) => state.game.currentPos
 export const selectCurrentPlayerChance = (state: RootState) => state.game.chancePlayer;
 export const selectDiceRolled = (state: RootState) => state.game.isDiceRolled;
 export const selectDiceNo = (state: RootState) => state.game.diceNo;
-export const selectWinner = (state: RootState) => state.game.winner;
+export const selectFinalWinner = (state: RootState) => state.game.finalWinner;
+export const selectWinners = (state: RootState) => state.game.winners;
+export const selectTotalPlayers = (state: RootState) => state.game.totalPlayers;
+export const selectActivePlayers = (state: RootState) => state.game.activePlayers;
 
 export const selectPlayer1 = (state: RootState): PLAYER_PIECE[] => state.game.player1;
 export const selectPlayer2 = (state: RootState): PLAYER_PIECE[] => state.game.player2;

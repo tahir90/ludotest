@@ -5,7 +5,7 @@ import LottieView from 'lottie-react-native'
 import { ANIMATATIONS } from '$assets/animation'
 import { Polygon, Svg } from 'react-native-svg'
 import { useAppDispatch, useAppSelector } from '$hooks/useAppStore'
-import { selectFireworks } from '$redux/reducers/gameSelectors'
+import { selectFireworks, selectActivePlayers } from '$redux/reducers/gameSelectors'
 import { updateFireworks } from '$redux/reducers/gameSlice'
 import Pile from './Pile'
 import { DEVICE_HEIGHT, DEVICE_WIDTH } from '$constants/dimensions'
@@ -27,6 +27,7 @@ interface PlayerPiecesItem {
     bottom: number;
     pieceColor: string;
     translate: any;
+    playerNo: number;
 }
 
 interface PlayerPiecesProps {
@@ -70,6 +71,7 @@ const FourTriangle: React.FC<FourTriangleProps> = ({ player1, player2, player3, 
 
     const [showFirework, setShowFirework] = useState<boolean>(false);
     const isFirework = useAppSelector(selectFireworks);
+    const activePlayers = useAppSelector(selectActivePlayers);
     const dispatch = useAppDispatch();
 
     useEffect(() => {
@@ -94,7 +96,8 @@ const FourTriangle: React.FC<FourTriangleProps> = ({ player1, player2, player3, 
                 right: 0,
                 bottom: 0,
                 pieceColor: COLORS.red,
-                translate: 'translateX'
+                translate: 'translateX',
+                playerNo: 1
             },
             {
                 player: player3,
@@ -103,7 +106,8 @@ const FourTriangle: React.FC<FourTriangleProps> = ({ player1, player2, player3, 
                 right: 0,
                 bottom: 0,
                 pieceColor: COLORS.yellow,
-                translate: 'translateX'
+                translate: 'translateX',
+                playerNo: 3
             },
             {
                 player: player2,
@@ -112,19 +116,21 @@ const FourTriangle: React.FC<FourTriangleProps> = ({ player1, player2, player3, 
                 right: 0,
                 bottom: 0,
                 pieceColor: COLORS.green,
-                translate: 'translateY'
+                translate: 'translateY',
+                playerNo: 2
             },
             {
-                player: player3,
+                player: player4,
                 top: 20,
                 left: -2,
                 right: 0,
                 bottom: 0,
                 pieceColor: COLORS.blue,
-                translate: 'translateX'
+                translate: 'translateX',
+                playerNo: 4
             },
-        ],
-        [player1, player2, player3, player4])
+        ].filter((data) => activePlayers.includes(data.playerNo)), // Only show active players
+        [player1, player2, player3, player4, activePlayers])
 
     const renderPlayerPieces = useCallback((data: PlayerPiecesItem, index: number) => {
         return (
