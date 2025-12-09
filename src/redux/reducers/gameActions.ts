@@ -72,8 +72,8 @@ export const handleForwardThunk = (playerNo: number, id: string, pos: number) =>
 
         if (
             areDifferentIds &&
-            !safeSpots.includes(finalPath[0].pos) &&
-            !starSpots.includes(finalPath[0].pos)
+            !safeSpots.includes(finalPath) &&
+            !starSpots.includes(finalPath)
         ) {
             const enemyPiece = finalPlot.find((p) => p.id[0] !== id[0]);
             const enemyId = enemyPiece.id[0];
@@ -117,6 +117,7 @@ export const handleForwardThunk = (playerNo: number, id: string, pos: number) =>
                 const playerAllPieces = finalPlayerState.game[`player${playerNo}`];
 
                 if (checkWinningCriteria(playerAllPieces)) {
+                    dispatch(unfreezeDice());
                     dispatch(announceWinner(playerNo))
                     playSound('cheer');
                     return;
@@ -128,7 +129,7 @@ export const handleForwardThunk = (playerNo: number, id: string, pos: number) =>
             }
         } else {
             let chancePlayer: number = playerNo + 1;
-            if (chancePlayer >= 4) {
+            if (chancePlayer > 4) {
                 chancePlayer = 1;
             }
             dispatch(updatePlayerChance({ chancePlayer }))

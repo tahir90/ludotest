@@ -138,7 +138,7 @@ const FourTriangle: React.FC<FourTriangleProps> = ({ player1, player2, player3, 
                     right: data.right,
                 }}
                 pieceColor={data.pieceColor}
-                translate={data.pieceColor}
+                translate={data.translate}
             />
         )
     }, [playersData])

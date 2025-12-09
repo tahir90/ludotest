@@ -29,7 +29,7 @@ const Pile: React.FC<PileProp> = ({ color, player, cell, pieceId, onPress }) => 
 
     const isForwardable = useCallback(() => {
         const piece = playerPieces?.find((item: PLAYER_PIECE) => item.id === pieceId);
-        return piece && ((piece.travelCount + diceNo) <= 7);
+        return piece && piece.pos !== 0 && ((piece.travelCount + diceNo) <= 57);
     }, [playerPieces, diceNo, pieceId]);
 
     useEffect(() => {
