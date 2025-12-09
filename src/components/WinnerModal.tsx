@@ -38,15 +38,15 @@ const WinnerModal: React.FC<{ winner: any }> = ({ winner }) => {
         <Modal
             style={styles.modal}
             isVisible={visible}
-            backdropColor="black"
-            backdropOpacity={0.8}
+            backdropColor={COLORS.darkPurpleBg}
+            backdropOpacity={0.85}
             onBackdropPress={() => { }}
             animationIn="zoomIn"
             animationOut="zoomOut"
             onBackButtonPress={() => { }}
         >
             <LinearGradient
-                colors={['#0f0c29', '#302b63', '#24243e']}
+                colors={COLORS.gradientDark}
                 style={styles.gradientContainer}
             >
                 <View style={styles.content}>
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
         padding: 20,
         width: '96%',
         borderWidth: 2,
-        borderColor: 'gold',
+        borderColor: COLORS.goldBorder,
         justifyContent: 'center',
         alignItems: 'center'
     },

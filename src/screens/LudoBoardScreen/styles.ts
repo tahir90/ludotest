@@ -1,5 +1,6 @@
 import { DEVICE_HEIGHT, DEVICE_WIDTH } from "$constants/dimensions";
 import { StyleSheet } from "react-native";
+import { COLORS } from "$constants/colors";
 
 export const styles = StyleSheet.create({
     iconContainer : {
@@ -24,19 +25,22 @@ export const styles = StyleSheet.create({
         height : '100%',
         alignItems : 'center',
         padding : 10,
-        backgroundColor : 'white'
+        backgroundColor : COLORS.white,
+        borderWidth : 2,
+        borderColor : COLORS.goldBorder,
+        borderRadius : 10
     },
     plotContainer : {
         width : '100%',
         height : '40%',
         flexDirection : 'row',
         justifyContent : 'space-between',
-        backgroundColor : '#ccc'
+        backgroundColor : COLORS.cardBackground
     },
     pathContainer : {
         flexDirection: 'row',
         width : '100%',
         height : '20%',
-        backgroundColor : '#1E5162'
+        backgroundColor : COLORS.deepPurple
     }
 })

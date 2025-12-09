@@ -9,6 +9,7 @@ import { useAppDispatch, useAppSelector } from '$hooks/useAppStore';
 import { selectCurrentPlayerChance, selectDiceNo, selectDiceRolled, selectWinners, selectTotalPlayers, selectFinalWinner, selectActivePlayers } from '$redux/reducers/gameSelectors';
 import { enableCellSelection, enablePileSelection, updateDiceNumber, updatePlayerChance } from '$redux/reducers/gameSlice';
 import { playSound } from '$helpers/SoundUtils';
+import { COLORS } from '$constants/colors';
 
 interface DiceProps {
     color: string;
@@ -64,7 +65,7 @@ const Dice: React.FC<DiceProps> = ({ color, rotate, player, data }) => {
 
     const handleDicePress = async (predice: number) => {
 
-        const diceNumber = predice || Math.floor(Math.random() * 5) + 1;
+        const diceNumber = predice || Math.floor(Math.random() * 6) + 1;
         playSound('dice_roll');
         setDiceRolling(true)
         await delay(800);
@@ -133,7 +134,7 @@ const Dice: React.FC<DiceProps> = ({ color, rotate, player, data }) => {
             <View style={styles.border1}>
                 <LinearGradient
                     style={styles.linearGradient}
-                    colors={['#0052BE', '#5F9FCB', '#97C6C9']}
+                    colors={COLORS.gradientPurple}
                     start={{ x: 0, y: 0.5 }}
                     end={{ x: 1, y: 0.5 }}
                 >
@@ -149,7 +150,7 @@ const Dice: React.FC<DiceProps> = ({ color, rotate, player, data }) => {
             <View style={styles.border2}>
                 <LinearGradient
                     style={styles.diceGradient}
-                    colors={['#aac8ab', '#aac8ab', '#aac8ab']}
+                    colors={[COLORS.lightPurple, COLORS.primaryPurple, COLORS.lightPurple]}
                     start={{ x: 0, y: 0.5 }}
                     end={{ x: 1, y: 0.5 }}
                 >
@@ -206,15 +207,15 @@ const styles = StyleSheet.create({
     border1: {
         borderWidth: 3,
         borderRightWidth: 0,
-        borderColor: '#f0ce2c'
+        borderColor: COLORS.goldBorder
     },
     border2: {
         borderWidth: 3,
         padding: 1,
-        backgroundColor: '#aac8ab',
+        backgroundColor: COLORS.lightPurple,
         borderRadius: 10,
         borderLeftWidth: 3,
-        borderColor: '#aac8ab'
+        borderColor: COLORS.lightPurple
     },
     linearGradient: {
 
@@ -231,7 +232,7 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     diceContainer: {
-        backgroundColor: '#e8c0c1',
+        backgroundColor: COLORS.lightPink,
         borderWidth: 1,
         borderRadius: 5,
         width: 55,
@@ -244,7 +245,7 @@ const styles = StyleSheet.create({
     diceGradient: {
         borderWidth: 3,
         borderLeftWidth: 3,
-        borderColor: '#f0ce2c',
+        borderColor: COLORS.goldBorder,
         justifyContent: 'center',
         alignItems: 'center'
     },

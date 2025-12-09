@@ -23,14 +23,14 @@ interface GradientButtonProps {
 const GradientButton: React.FC<GradientButtonProps> = ({
     title,
     onPress,
-    iconColor = '#d5be3e',
+    iconColor = COLORS.gold,
 }) => {
     return (
         <View
             style={{
                 borderRadius: 10,
                 borderWidth: 2,
-                borderColor: '#000',
+                borderColor: COLORS.goldBorder,
                 marginVertical: 10,
             }}>
             <TouchableOpacity
@@ -41,7 +41,7 @@ const GradientButton: React.FC<GradientButtonProps> = ({
                 }}
                 style={styles.buttonContainer}>
                 <LinearGradient
-                    colors={['#4c669f', '#3b5998', '#192f6a']}
+                    colors={COLORS.gradientPurple}
                     style={styles.button}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 0, y: 1 }}>
@@ -71,11 +71,11 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         elevation: 5,
         backgroundColor: COLORS.white,
-        shadowColor: '#d5be3e',
+        shadowColor: COLORS.gold,
         shadowOpacity: 0.5,
         shadowOffset: { width: 1, height: 1 },
         shadowRadius: 10,
-        borderColor: '#d5be3e',
+        borderColor: COLORS.goldBorder,
         width: 220,
     },
     button: {
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         borderRadius: 5,
         borderWidth: 2,
-        borderColor: '#000',
+        borderColor: COLORS.goldBorder,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',

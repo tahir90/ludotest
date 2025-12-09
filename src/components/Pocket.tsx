@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.white,
         width: '70%',
         height: '70%',
-        borderColor: COLORS.borderColor,
+        borderColor: COLORS.goldBorder,
         padding: 15,
         borderWidth: 0.5,
         gap: 20

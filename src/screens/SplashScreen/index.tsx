@@ -50,7 +50,7 @@ const SplashScreen: React.FC = () => {
         <Image resizeMode={'contain'} source={IMAGES.Logo} style={styles.img} />
       </Animated.View>
 
-      <ActivityIndicator size={'large'} color={COLORS.white} />
+      <ActivityIndicator size={'large'} color={COLORS.gold} />
     </Wrapper>
   )
 }

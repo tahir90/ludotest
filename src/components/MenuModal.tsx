@@ -7,6 +7,7 @@ import { useAppDispatch } from '$hooks/useAppStore';
 import { announceWinner, resetGame } from '$redux/reducers/gameSlice';
 import { playSound } from '$helpers/SoundUtils';
 import { goBack } from '$helpers/navigationUtils';
+import { COLORS } from '$constants/colors';
 
 interface MenuModalProps {
     visible: boolean;
@@ -31,8 +32,8 @@ const MenuModal: React.FC<MenuModalProps> = ({ visible, onPressHide }) => {
         <Modal
             style={styles.bottomModalView}
             isVisible={visible}
-            backdropColor="black"
-            backdropOpacity={0.8}
+            backdropColor={COLORS.darkPurpleBg}
+            backdropOpacity={0.85}
             onBackdropPress={onPressHide}
             animationIn={'zoomIn'}
             animationOut={'zoomOut'}
@@ -40,7 +41,7 @@ const MenuModal: React.FC<MenuModalProps> = ({ visible, onPressHide }) => {
         >
             <View style={styles.modalContainer}>
                 <LinearGradient
-                    colors={['#0f0c29', '#302b63', '#24243e']}
+                    colors={COLORS.gradientDark}
                     style={styles.gradientContainer}>
                     <View style={styles.subView}>
                         <GradientButton title="RESUME" onPress={onPressHide} />
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
         paddingVertical : 40,
         width : '96%',
         borderWidth : 2,
-        borderColor : 'gold',
+        borderColor : COLORS.goldBorder,
         justifyContent:'center',
         alignItems :'center'
     },
