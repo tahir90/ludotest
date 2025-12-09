@@ -1,0 +1,7 @@
+{
+  "name": "LudoApp",
+  "displayName": "LudoApp",
+  "android": {
+    "package": "com.ludoapp"
+  }
+}
