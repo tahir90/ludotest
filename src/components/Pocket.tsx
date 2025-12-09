@@ -3,9 +3,9 @@ import React, { memo, useCallback } from 'react'
 import { COLORS } from '$constants/colors';
 import Pile from './Pile';
 import { useAppDispatch, useAppSelector } from '$hooks/useAppStore';
-import { unfreezeDice, updatePlayerPieceValue } from '$redux/reducers/gameSlice';
+import { unfreezeDice, updatePlayerPieceValue, updatePlayerChance, disableTouch } from '$redux/reducers/gameSlice';
 import { startingPoints } from '$helpers/PlotData';
-import { selectActivePlayers } from '$redux/reducers/gameSelectors';
+import { selectActivePlayers, selectDiceNo } from '$redux/reducers/gameSelectors';
 
 interface PocketProps {
     color: string;
@@ -25,6 +25,7 @@ const Pocket: React.FC<PocketProps> = ({ color, player, data }) => {
 
     const dispatch = useAppDispatch();
     const activePlayers = useAppSelector(selectActivePlayers);
+    const diceNo = useAppSelector(selectDiceNo);
     
     // For inactive players, show structure but no tokens
     const isActive = activePlayers.includes(player);
@@ -32,21 +33,28 @@ const Pocket: React.FC<PocketProps> = ({ color, player, data }) => {
 
     const handlePress = useCallback((value: PLAYER_PIECE) => {
         let playerNo: any = value.id.at(0);
+        let numericPlayerNo: number;
         switch (playerNo) {
             case 'A':
                 playerNo = 'player1';
+                numericPlayerNo = 1;
                 break;
             case 'B':
                 playerNo = 'player2';
+                numericPlayerNo = 2;
                 break;
             case 'C':
                 playerNo = 'player3';
+                numericPlayerNo = 3;
                 break;
             case 'D':
                 playerNo = 'player4';
+                numericPlayerNo = 4;
                 break;
         }
 
+        // Disable touch to prevent double-clicks and disable cell selection
+        dispatch(disableTouch());
 
         dispatch(updatePlayerPieceValue({
             playerNo,
@@ -55,8 +63,18 @@ const Pocket: React.FC<PocketProps> = ({ color, player, data }) => {
             travelCount: 1
         }))
 
-        dispatch(unfreezeDice());
-    }, []);
+        // If dice was 6, player gets another turn
+        // Disable cell selection so tokens can't be moved with this 6
+        // Visible dice still shows 6, but clicking dice will reroll
+        if (diceNo === 6) {
+            dispatch(unfreezeDice());
+            // Give player another turn - they can reroll
+            dispatch(updatePlayerChance({ chancePlayer: numericPlayerNo }));
+        } else {
+            // This shouldn't happen normally (pile selection only for 6)
+            dispatch(unfreezeDice());
+        }
+    }, [diceNo, dispatch]);
 
     return (
         <View style={[styles.container, { backgroundColor: color }]}>

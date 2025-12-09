@@ -8,6 +8,7 @@ import { IMAGES } from '$assets/images';
 import { useAppDispatch, useAppSelector } from '$hooks/useAppStore';
 import { selectCurrentPlayerChance, selectDiceNo, selectDiceRolled, selectWinners, selectTotalPlayers, selectFinalWinner, selectActivePlayers } from '$redux/reducers/gameSelectors';
 import { enableCellSelection, enablePileSelection, updateDiceNumber, updatePlayerChance } from '$redux/reducers/gameSlice';
+import { handleForwardThunk } from '$redux/reducers/gameActions';
 import { playSound } from '$helpers/SoundUtils';
 import { COLORS } from '$constants/colors';
 
@@ -121,6 +122,29 @@ const Dice: React.FC<DiceProps> = ({ color, rotate, player, data }) => {
             }
 
 
+            // Check for auto-move: if only one token is eligible, move it automatically
+            // For dice 6: only auto-move if ALL pieces are already out (no tokens in home)
+            // For other dice: auto-move if only one token is eligible
+            const allPiecesOut = playerPieces.every((piece) => piece.pos !== 0);
+            const shouldCheckAutoMove = diceNumber !== 6 || (diceNumber === 6 && allPiecesOut);
+            
+            if (shouldCheckAutoMove) {
+                // Find eligible pieces (pieces that are out and can move)
+                const eligiblePieces = playerPieces.filter((piece) => {
+                    return piece.pos !== 0 && (piece.travelCount + diceNumber) <= 57;
+                });
+                
+                // If exactly one piece is eligible, auto-move it
+                if (eligiblePieces.length === 1) {
+                    const eligiblePiece = eligiblePieces[0];
+                    // Small delay for better UX
+                    await delay(300);
+                    dispatch(handleForwardThunk(player, eligiblePiece.id, eligiblePiece.pos));
+                    return; // Exit early since we're auto-moving
+                }
+            }
+            
+            // Normal flow: enable selection for user to choose
             if (diceNumber === 6) {
                 dispatch(enablePileSelection({ playerNo: player }));
             }
