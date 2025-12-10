@@ -1,6 +1,7 @@
 import { SOUNDS } from "$assets/sfx";
 import SoundPlayer from "react-native-sound-player";
 import Sound from "react-native-sound";
+import { Platform } from 'react-native';
 
 // Enable playback in silence mode
 Sound.setCategory('Playback', true); // true = mixWithOthers
@@ -226,21 +227,44 @@ export const playSound = async (soundName: SOUND_NAME, loop: boolean = false, vo
 export const setMusicVolume = async (volume: number) => {
     try {
         currentVolume = Math.max(0, Math.min(1, volume)); // Clamp between 0 and 1
-        console.log('Setting volume to:', currentVolume);
+        console.log('🔊 === SETTING MUSIC VOLUME ===');
+        console.log('Target volume:', currentVolume, `(${Math.round(currentVolume * 100)}%)`);
+        console.log('Platform:', Platform.OS);
+        console.log('VolumeManager available:', !!volumeManager);
+        console.log('Has setVolume:', typeof volumeManager?.setVolume === 'function');
         
         // Set system media volume (0.0 to 1.0)
         if (volumeManager && typeof volumeManager.setVolume === 'function') {
             try {
-                await volumeManager.setVolume(currentVolume);
-                console.log('Volume set successfully to:', currentVolume);
+                // On iOS, we need to ensure the volume is set correctly
+                // The volume manager should handle iOS-specific requirements
+                const result = await volumeManager.setVolume(currentVolume);
+                console.log('✅ VolumeManager.setVolume called, result:', result);
+                
+                // Verify the volume was set (iOS might need a small delay)
+                if (Platform.OS === 'ios') {
+                    // Give iOS a moment to apply the volume change
+                    setTimeout(async () => {
+                        try {
+                            const verifyResult = await volumeManager.getVolume();
+                            const actualVolume = verifyResult?.volume || verifyResult;
+                            console.log('✅ Verified volume after setting:', actualVolume, `(${Math.round((actualVolume || 0) * 100)}%)`);
+                        } catch (e) {
+                            console.warn('⚠️ Could not verify volume:', e);
+                        }
+                    }, 100);
+                }
             } catch (e) {
-                console.error('Error calling setVolume:', e);
+                console.error('❌ Error calling setVolume:', e);
+                console.error('Error details:', JSON.stringify(e, null, 2));
             }
         } else {
-            console.warn('VolumeManager.setVolume not available');
+            console.warn('⚠️ VolumeManager.setVolume not available');
+            console.warn('VolumeManager object:', volumeManager);
         }
+        console.log('🔊 === END SETTING MUSIC VOLUME ===');
     } catch (err) {
-        console.error("Can't set volume", err);
+        console.error("❌ Can't set volume", err);
     }
 }
 
