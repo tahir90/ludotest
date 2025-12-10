@@ -1,5 +1,6 @@
-import { ImageBackground, StyleSheet, SafeAreaView, View } from 'react-native'
+import { ImageBackground, StyleSheet, View } from 'react-native'
 import React from 'react'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { IMAGES } from '$assets/images'
 import { DEVICE_HEIGHT, DEVICE_WIDTH } from '$constants/dimensions'
 import { COLORS } from '$constants/colors'
@@ -18,7 +19,7 @@ const Wrapper: React.FC<{ children: any, style?: any }> = ({ children, style }) 
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
             />
-            <SafeAreaView style={[styles.container, { ...style }]}>
+            <SafeAreaView style={[styles.container, { ...style }]} edges={['top', 'left', 'right']}>
                 {children}
             </SafeAreaView>
         </ImageBackground>

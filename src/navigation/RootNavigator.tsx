@@ -27,10 +27,14 @@ const RootNavigator = () => {
     >
       <Stack.Navigator
             initialRouteName='SplashScreen'
-            screenOptions={{headerShown:false}}
+            screenOptions={{
+              headerShown: false,
+              gestureEnabled: true,
+              fullScreenGestureEnabled: true,
+            }}
         >
-            <Stack.Screen name='SplashScreen' component={SplashScreen} />
-            <Stack.Screen name='HomeScreen' component={HomeScreen} />
+            <Stack.Screen name='SplashScreen' component={SplashScreen} options={{ gestureEnabled: false }} />
+            <Stack.Screen name='HomeScreen' component={HomeScreen} options={{ gestureEnabled: false }} />
             <Stack.Screen name='LudoBoardScreen' component={LudoBoardScreen} />
             
             {/* Shop Screens */}

@@ -97,12 +97,7 @@ const ResourceBar: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    height: 60,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1000,
+    minHeight: 60,
   },
   gradient: {
     flex: 1,
@@ -110,7 +105,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 15,
-    paddingTop: 10,
+    paddingVertical: 10,
   },
   levelContainer: {
     flexDirection: 'row',

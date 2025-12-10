@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { COLORS } from '$constants/colors';
 import { useNavigation } from '@react-navigation/native';
@@ -14,6 +15,7 @@ interface TopNavProps {
 
 const TopNav: React.FC<TopNavProps> = ({ title, showBack = true, rightComponent }) => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   const handleBack = () => {
     if (navigation.canGoBack()) {
@@ -22,17 +24,19 @@ const TopNav: React.FC<TopNavProps> = ({ title, showBack = true, rightComponent 
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <ResourceBar />
       <View style={styles.navBar}>
-        {showBack && (
+        {showBack ? (
           <TouchableOpacity
             style={styles.backButton}
             onPress={handleBack}
             activeOpacity={0.8}
           >
-            <ArrowLeftIcon size={24} color={COLORS.white} />
+            <ArrowLeftIcon size={28} color={COLORS.white} />
           </TouchableOpacity>
+        ) : (
+          <View style={styles.backButton} />
         )}
         <Text style={styles.title}>{title}</Text>
         {rightComponent ? (
@@ -48,7 +52,7 @@ const TopNav: React.FC<TopNavProps> = ({ title, showBack = true, rightComponent 
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    paddingTop: 60,
+    backgroundColor: COLORS.darkPurpleBg + '40',
   },
   navBar: {
     flexDirection: 'row',
@@ -59,7 +63,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.darkPurpleBg + '80',
   },
   backButton: {
-    padding: 5,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   title: {
     flex: 1,
@@ -70,7 +77,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   rightContainer: {
-    width: 34, // Same width as back button for centering
+    width: 40,
     alignItems: 'flex-end',
   },
 });
