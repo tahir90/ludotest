@@ -1,6 +1,7 @@
 import { COLORS } from "$constants/colors";
 import { DEVICE_HEIGHT, DEVICE_WIDTH } from "$constants/dimensions";
 import { StyleSheet } from "react-native";
+import { RFValue } from 'react-native-responsive-fontsize';
 
 export const styles = StyleSheet.create({
     img : {
@@ -28,10 +29,86 @@ export const styles = StyleSheet.create({
         position : 'absolute',
         top : '70%',
         left : '24%',
+        zIndex: 1,
     },
     witch : {
         height : 250,
         width : 250,
         transform : [{rotate:'25deg'}]
-    }
+    },
+    scrollView: {
+        flex: 1,
+        width: '100%',
+    },
+    scrollContent: {
+        paddingBottom: 100,
+    },
+    quickActionsRow: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginHorizontal: 15,
+        marginBottom: 15,
+    },
+    gameModesContainer: {
+        marginHorizontal: 15,
+        marginBottom: 20,
+    },
+    gameModesRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 10,
+    },
+    gameModeNumber: {
+        fontSize: RFValue(48),
+        color: COLORS.white,
+        fontFamily: 'Philosopher-Bold',
+        fontWeight: 'bold',
+    },
+    gameModeIcon: {
+        fontSize: RFValue(40),
+    },
+    legacyButtons: {
+        alignItems: 'center',
+        marginVertical: 20,
+    },
+    activityButtons: {
+        position: 'absolute',
+        right: 10,
+        top: 200,
+        alignItems: 'center',
+    },
+    activityButton: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: COLORS.cardBackground + 'CC',
+        borderWidth: 2,
+        borderColor: COLORS.goldBorder + '60',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 10,
+        position: 'relative',
+    },
+    activityIcon: {
+        fontSize: RFValue(24),
+    },
+    activityBadge: {
+        position: 'absolute',
+        top: -5,
+        right: -5,
+        backgroundColor: COLORS.error,
+        borderRadius: 10,
+        minWidth: 20,
+        height: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: COLORS.white,
+    },
+    activityBadgeText: {
+        color: COLORS.white,
+        fontSize: RFValue(10),
+        fontFamily: 'Philosopher-Bold',
+        fontWeight: 'bold',
+    },
 });

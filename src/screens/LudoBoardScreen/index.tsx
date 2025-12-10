@@ -16,6 +16,8 @@ import { useIsFocused } from '@react-navigation/native';
 import { DEVICE_HEIGHT, DEVICE_WIDTH } from '$constants/dimensions'
 import MenuModal from '$components/MenuModal'
 import WinnerModal from '$components/WinnerModal'
+import { SpeakerWaveIcon, SpeakerXMarkIcon } from 'react-native-heroicons/solid'
+import { playSound, toggleMusicMute, stopSound } from '$helpers/SoundUtils'
 
 const LudoBoardScreen = () => {
 
@@ -32,11 +34,15 @@ const LudoBoardScreen = () => {
 
   const [showStartIMG, setShowStartIMG] = useState<boolean>(false);
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
+  const [isMusicMuted, setIsMusicMuted] = useState<boolean>(false);
   const opacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if(isFocused){
       setShowStartIMG(true);
+      // Start background music at reduced volume (0.2 = 20% volume for subtle background)
+      playSound('home', true, 0.2);
+      
       const blinkAnimation = Animated.loop(Animated.sequence([
         Animated.timing(opacity,{
           toValue : 0,
@@ -60,23 +66,43 @@ const LudoBoardScreen = () => {
       return () => {
         blinkAnimation.stop();
         clearTimeout(timeout);
+        stopSound();
       }
     }
   },[isFocused])
 
+  const handleMusicMuteToggle = () => {
+    const muted = toggleMusicMute();
+    setIsMusicMuted(muted);
+  };
+
   return (
     <Wrapper>
-      <TouchableOpacity
-        style={styles.iconContainer}
-        activeOpacity={0.6}
-        onPress={() => setMenuVisible(!menuVisible)}
-      >
-        <Image
-          source={IMAGES.Menu}
-          style={{ width: 30, height: 30 }}
-          resizeMode={'contain'}
-        />
-      </TouchableOpacity>
+      <View style={styles.topButtonsContainer}>
+        <TouchableOpacity
+          style={styles.iconContainer}
+          activeOpacity={0.6}
+          onPress={() => setMenuVisible(!menuVisible)}
+        >
+          <Image
+            source={IMAGES.Menu}
+            style={{ width: 30, height: 30 }}
+            resizeMode={'contain'}
+          />
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.musicButton, isMusicMuted && styles.musicButtonMuted]}
+          activeOpacity={0.6}
+          onPress={handleMusicMuteToggle}
+        >
+          {isMusicMuted ? (
+            <SpeakerXMarkIcon size={24} color={COLORS.error} />
+          ) : (
+            <SpeakerWaveIcon size={24} color={COLORS.gold} />
+          )}
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.container}>
         <View style={styles.flexRow} pointerEvents={isDiceTouched ? 'none' : 'auto'}>

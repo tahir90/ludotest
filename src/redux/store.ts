@@ -6,7 +6,7 @@ import RootReducer from "./root-reducer";
 const persistConfig = {
     key: 'root',
     storage: reduxStorage,
-    whitelist: ['game']
+    whitelist: ['game', 'user']
 }
 
 const persistedReducer = persistReducer(persistConfig, RootReducer);

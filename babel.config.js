@@ -14,6 +14,8 @@ module.exports = {
           '$redux': './src/redux',
           '$hooks': './src/hooks',
           '$navigation': './src/navigation',
+          '$services': './src/services',
+          '$types': './src/types',
         },
       },
     ],

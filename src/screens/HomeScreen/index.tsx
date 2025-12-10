@@ -1,22 +1,36 @@
-import { Animated, Text, Image, Alert, Pressable } from 'react-native'
-import React, { useCallback, useEffect, useRef } from 'react'
-import Wrapper from '$components/Wrapper'
-import { IMAGES } from '$assets/images'
-import { styles } from './styles'
-import GradientButton from '$components/GradientButton'
-import { useAppDispatch } from '$hooks/useAppStore'
-import { resetGame, setTotalPlayers } from '$redux/reducers/gameSlice'
-import { playSound, stopSound } from '$helpers/SoundUtils'
-import { useSelector } from 'react-redux'
-import { selectCurrentPosition } from '$redux/reducers/gameSelectors'
-import { useIsFocused } from '@react-navigation/native'
-import { navigate } from '$helpers/navigationUtils'
-import LottieView from 'lottie-react-native'
-import { ANIMATATIONS } from '$assets/animation'
-import { DEVICE_WIDTH } from '$constants/dimensions'
+import { Animated, Text, Image, ScrollView, Pressable, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Wrapper from '$components/Wrapper';
+import { IMAGES } from '$assets/images';
+import { styles } from './styles';
+import GradientButton from '$components/GradientButton';
+import { useAppDispatch } from '$hooks/useAppStore';
+import { resetGame, setTotalPlayers } from '$redux/reducers/gameSlice';
+import { playSound, stopSound } from '$helpers/SoundUtils';
+import { useSelector } from 'react-redux';
+import { selectCurrentPosition } from '$redux/reducers/gameSelectors';
+import { useIsFocused } from '@react-navigation/native';
+import { navigate } from '$helpers/navigationUtils';
+import LottieView from 'lottie-react-native';
+import { ANIMATATIONS } from '$assets/animation';
+import { DEVICE_WIDTH, DEVICE_HEIGHT } from '$constants/dimensions';
+import ResourceBar from '$components/layout/ResourceBar';
+import BottomNav from '$components/layout/BottomNav';
+import { ProfileSection } from '$components/features/home/ProfileSection';
+import { StreakSection } from '$components/features/home/StreakSection';
+import { GameModeCard } from '$components/features/home/GameModeCard';
+import { QuickActionCard } from '$components/features/home/QuickActionCard';
+import { useUser } from '$hooks/useUser';
+import {
+  TrophyIcon,
+  LockClosedIcon,
+  VideoCameraIcon,
+  CubeIcon,
+  UserPlusIcon,
+} from 'react-native-heroicons/solid';
+import { COLORS } from '$constants/colors';
 
 const HomeScreen = () => {
-
   const dispatch = useAppDispatch();
   const currentPosition = useSelector(selectCurrentPosition);
   const isFocused = useIsFocused();
@@ -24,14 +38,23 @@ const HomeScreen = () => {
   const withAnim = useRef(new Animated.Value(-DEVICE_WIDTH)).current;
   const scaleXAnim = useRef(new Animated.Value(-1)).current;
 
+  const [streakProgress] = useState(0);
+  const [streakTarget] = useState(100);
+  const { user: currentUser } = useUser();
+
   useEffect(() => {
     if (isFocused) {
-      playSound('home')
+      playSound('home', true); // Enable looping for background music
     }
-  }, [isFocused])
+    return () => {
+      // Cleanup when leaving screen
+      if (!isFocused) {
+        stopSound();
+      }
+    };
+  }, [isFocused]);
 
   useEffect(() => {
-
     const loopAnimation = () => {
       Animated.loop(
         Animated.sequence([
@@ -39,79 +62,69 @@ const HomeScreen = () => {
             Animated.timing(withAnim, {
               toValue: DEVICE_WIDTH * 0.02,
               duration: 2000,
-              useNativeDriver: true
+              useNativeDriver: true,
             }),
             Animated.timing(scaleXAnim, {
               toValue: -1,
               duration: 2000,
-              useNativeDriver: true
-            })
+              useNativeDriver: true,
+            }),
           ]),
-
           Animated.delay(3000),
-
           Animated.parallel([
             Animated.timing(withAnim, {
               toValue: DEVICE_WIDTH * 2,
               duration: 8000,
-              useNativeDriver: true
+              useNativeDriver: true,
             }),
             Animated.timing(scaleXAnim, {
               toValue: -1,
               duration: 0,
-              useNativeDriver: true
-            })
+              useNativeDriver: true,
+            }),
           ]),
-
           Animated.parallel([
             Animated.timing(withAnim, {
               toValue: -DEVICE_WIDTH * 0.05,
               duration: 3000,
-              useNativeDriver: true
+              useNativeDriver: true,
             }),
             Animated.timing(scaleXAnim, {
               toValue: 1,
               duration: 0,
-              useNativeDriver: true
-            })
+              useNativeDriver: true,
+            }),
           ]),
-
           Animated.delay(3000),
-
           Animated.parallel([
             Animated.timing(withAnim, {
               toValue: -DEVICE_WIDTH * 2,
               duration: 8000,
-              useNativeDriver: true
+              useNativeDriver: true,
             }),
             Animated.timing(scaleXAnim, {
               toValue: 1,
               duration: 0,
-              useNativeDriver: true
-            })
+              useNativeDriver: true,
+            }),
           ]),
         ])
       ).start();
-    }
+    };
 
     const cleanUpAnimation = () => {
       Animated.timing(withAnim).stop();
       Animated.timing(scaleXAnim).stop();
-    }
+    };
 
     loopAnimation();
 
     return cleanUpAnimation;
-  }, [withAnim, scaleXAnim])
+  }, [withAnim, scaleXAnim]);
 
   const renderButton = useCallback((title: string, onPress: () => void) => {
-    return (
-      <GradientButton
-        title={title}
-        onPress={onPress}
-      />
-    )
-  }, [])
+    return <GradientButton title={title} onPress={onPress} />;
+  }, []);
 
   const startGame = async (e: boolean = false, playerCount?: number) => {
     stopSound();
@@ -126,7 +139,7 @@ const HomeScreen = () => {
   };
 
   const handleNewGame = useCallback(() => {
-    startGame(true, 4) // Default 4 players
+    startGame(true, 4);
   }, []);
 
   const handleResumeGame = useCallback(() => {
@@ -141,27 +154,130 @@ const HomeScreen = () => {
     startGame(true, 3);
   }, []);
 
-  const handleCoomingSoon = useCallback(() => {
-    Alert.alert('Cooming Soon')
+  const handleComingSoon = useCallback(() => {
+    // Placeholder for coming soon features
   }, []);
 
+  const handleGameModePress = (mode: string) => {
+    if (mode === '2 Player') {
+      handle2Players();
+    } else if (mode === '4 Player') {
+      handleNewGame();
+    } else {
+      handleComingSoon();
+    }
+  };
+
   return (
-    <Wrapper style={{ justifyContent: 'flex-start' }}>
-      <Animated.View style={styles.imgContainer}>
-        <Image
-          source={IMAGES.Logo}
-          style={styles.img}
-          resizeMode={'contain'}
+    <Wrapper style={{ justifyContent: 'flex-start', paddingTop: 0 }}>
+      <ResourceBar />
+      
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Profile Section */}
+        {currentUser && <ProfileSection user={currentUser} />}
+
+        {/* Streak Section */}
+        <StreakSection
+          currentStreak={streakProgress}
+          targetStreak={streakTarget}
+          timeRemaining="2d 0h"
         />
-      </Animated.View>
 
-      {currentPosition.length !== 0 && renderButton("RESUME", handleResumeGame)}
-      {renderButton("NEW GAME", handleNewGame)}
-      {renderButton("2 Players", handle2Players)}
-      {renderButton("3 Players", handle3Players)}
-      {renderButton("VS Computer", handleCoomingSoon)}
-      {renderButton("2 vs 2", handleCoomingSoon)}
+        {/* Quick Actions Row */}
+        <View style={styles.quickActionsRow}>
+          <QuickActionCard
+            title="3 1 2"
+            value=""
+            icon={<TrophyIcon size={30} color={COLORS.gold} />}
+            onPress={() => navigate('LeaderboardScreen', {})}
+          />
+          <QuickActionCard
+            title="MEGA WIN"
+            value=""
+            icon={<TrophyIcon size={30} color={COLORS.gold} />}
+            onPress={handleComingSoon}
+            locked={true}
+            timer="11h 23m"
+          />
+        </View>
 
+        {/* Game Modes Grid */}
+        <View style={styles.gameModesContainer}>
+          <View style={styles.gameModesRow}>
+            <GameModeCard
+              title="2 Player"
+              icon={<Text style={styles.gameModeNumber}>2</Text>}
+              onPress={() => handleGameModePress('2 Player')}
+            />
+            <GameModeCard
+              title="4 Player"
+              icon={<Text style={styles.gameModeNumber}>4</Text>}
+              onPress={() => handleGameModePress('4 Player')}
+            />
+          </View>
+          <View style={styles.gameModesRow}>
+            <GameModeCard
+              title="Private Table"
+              icon={<Text style={styles.gameModeIcon}>🎲</Text>}
+              onPress={handleComingSoon}
+            />
+            <GameModeCard
+              title="VIP"
+              icon={<TrophyIcon size={40} color={COLORS.gold} />}
+              onPress={handleComingSoon}
+              locked={true}
+            />
+          </View>
+          <View style={styles.gameModesRow}>
+            <GameModeCard
+              title="Streak Stars"
+              icon={<TrophyIcon size={40} color={COLORS.gold} />}
+              onPress={handleComingSoon}
+              timer="2d 0h"
+            />
+          </View>
+        </View>
+
+        {/* Legacy Buttons (Hidden by default, can be shown if needed) */}
+        {false && (
+          <View style={styles.legacyButtons}>
+            {currentPosition.length !== 0 && renderButton('RESUME', handleResumeGame)}
+            {renderButton('NEW GAME', handleNewGame)}
+            {renderButton('2 Players', handle2Players)}
+            {renderButton('3 Players', handle3Players)}
+            {renderButton('VS Computer', handleComingSoon)}
+            {renderButton('2 vs 2', handleComingSoon)}
+          </View>
+        )}
+
+        {/* Activity Side Buttons */}
+        <View style={styles.activityButtons}>
+          <Pressable style={styles.activityButton} onPress={() => navigate('HomeScreen', {})}>
+            <VideoCameraIcon size={24} color={COLORS.white} />
+            <View style={styles.activityBadge}>
+              <Text style={styles.activityBadgeText}>6</Text>
+            </View>
+          </Pressable>
+          <Pressable style={styles.activityButton} onPress={() => navigate('ChestScreen', {})}>
+            <CubeIcon size={24} color={COLORS.white} />
+          </Pressable>
+          <Pressable style={styles.activityButton} onPress={() => navigate('ClubsScreen', {})}>
+            <Text style={styles.activityIcon}>🦖</Text>
+            <View style={styles.activityBadge}>
+              <Text style={styles.activityBadgeText}>6</Text>
+            </View>
+          </Pressable>
+          <Pressable style={styles.activityButton} onPress={() => navigate('FriendsScreen', {})}>
+            <UserPlusIcon size={24} color={COLORS.white} />
+          </Pressable>
+        </View>
+      </ScrollView>
+
+      {/* Witch Animation (Preserved) */}
       <Animated.View
         style={[
           styles.witchContainer,
@@ -184,8 +300,10 @@ const HomeScreen = () => {
           />
         </Pressable>
       </Animated.View>
-    </Wrapper>
-  )
-}
 
-export default HomeScreen
+      <BottomNav />
+    </Wrapper>
+  );
+};
+
+export default HomeScreen;

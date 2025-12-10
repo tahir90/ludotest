@@ -15,4 +15,9 @@ export const IMAGES = {
     GreenPile :  require('./piles/green.png'),
     BluePile :  require('./piles/blue.png'),
     YellowPile :  require('./piles/yellow.png'),
+    // Placeholder for new UI (using existing dice images as placeholders)
+    Crown: require('./dice/6.png'), // Use dice6 as crown placeholder
+    Computer: require('./dice/1.png'), // Placeholder
+    Team: require('./dice/2.png'), // Placeholder
+    QuickPlay: require('./dice/5.png'), // Placeholder
 }
