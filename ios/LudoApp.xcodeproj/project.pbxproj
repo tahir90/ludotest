@@ -8,13 +8,26 @@
 
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* LudoAppTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* LudoAppTests.m */; };
+		0B3956E60905070ED5C1136B /* girl4.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C96E86C650955CDCCC04E414 /* girl4.mp3 */; };
 		0C80B921A6F3F58F76C31292 /* libPods-LudoApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-LudoApp.a */; };
+		0DE10C188B3F4E9462C248AE /* collide.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = F3FA8FB3D42CB1312CD06214 /* collide.mp3 */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		27A9598EA009123B4045768B /* girl3.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 653111570AAC8B7C8FAC8711 /* girl3.mp3 */; };
+		39F7C6D537E97801F8BE1B50 /* dice_roll.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = D3828868CA6D1E3B3ACBA353 /* dice_roll.mp3 */; };
+		3C32382668115F79ABB3A16C /* safe_spot.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 3FD237A79924ACCA645C68CC /* safe_spot.mp3 */; };
+		40730844E85D7FED32812C21 /* game_start.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C36FBD309D3EF8D1BAAC73D4 /* game_start.mp3 */; };
 		6132EF182BDFF13200BBE14D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6132EF172BDFF13200BBE14D /* PrivacyInfo.xcprivacy */; };
+		7594999DBDC74C503B33F6DE /* home.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 8DD4E68476FCCE2C1E81A243 /* home.mp3 */; };
+		75F4311E6CA86F3E2A366140 /* ui.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E9AFDCC82CCFAD17F1461F65 /* ui.mp3 */; };
 		7699B88040F8A987B510C191 /* libPods-LudoApp-LudoAppTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 19F6CBCC0A4E27FBF8BF4A61 /* libPods-LudoApp-LudoAppTests.a */; };
+		7E5CBE3DC92C0B4C1942E596 /* girl1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 796B2303643030610B72F3BB /* girl1.mp3 */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		A6797A524CAE6DB6C7CA8D2A /* home_win.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 56A4570F3178F6EF485348F7 /* home_win.mp3 */; };
+		B407C2D7324D8ADDA86F6173 /* pile_move.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C7B2211787C8A158AEE8F6E6 /* pile_move.mp3 */; };
+		EB1D86C8EC81D946DE205544 /* cheer.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 785705669F8B68EC8D314890 /* cheer.mp3 */; };
+		FE0755D91FCA4E5DBF301B0E /* girl2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 3F41A4074CF0D9F2DA03DED4 /* girl2.mp3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,13 +52,26 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = LudoApp/main.m; sourceTree = "<group>"; };
 		19F6CBCC0A4E27FBF8BF4A61 /* libPods-LudoApp-LudoAppTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LudoApp-LudoAppTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B4392A12AC88292D35C810B /* Pods-LudoApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LudoApp.debug.xcconfig"; path = "Target Support Files/Pods-LudoApp/Pods-LudoApp.debug.xcconfig"; sourceTree = "<group>"; };
+		3F41A4074CF0D9F2DA03DED4 /* girl2.mp3 */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = audio.mp3; path = girl2.mp3; sourceTree = "<group>"; };
+		3FD237A79924ACCA645C68CC /* safe_spot.mp3 */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = audio.mp3; path = safe_spot.mp3; sourceTree = "<group>"; };
+		56A4570F3178F6EF485348F7 /* home_win.mp3 */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = audio.mp3; path = home_win.mp3; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-LudoApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LudoApp.release.xcconfig"; path = "Target Support Files/Pods-LudoApp/Pods-LudoApp.release.xcconfig"; sourceTree = "<group>"; };
 		5B7EB9410499542E8C5724F5 /* Pods-LudoApp-LudoAppTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LudoApp-LudoAppTests.debug.xcconfig"; path = "Target Support Files/Pods-LudoApp-LudoAppTests/Pods-LudoApp-LudoAppTests.debug.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-LudoApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LudoApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6132EF172BDFF13200BBE14D /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = LudoApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		653111570AAC8B7C8FAC8711 /* girl3.mp3 */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = audio.mp3; path = girl3.mp3; sourceTree = "<group>"; };
+		785705669F8B68EC8D314890 /* cheer.mp3 */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = audio.mp3; path = cheer.mp3; sourceTree = "<group>"; };
+		796B2303643030610B72F3BB /* girl1.mp3 */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = audio.mp3; path = girl1.mp3; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = LudoApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		89C6BE57DB24E9ADA2F236DE /* Pods-LudoApp-LudoAppTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LudoApp-LudoAppTests.release.xcconfig"; path = "Target Support Files/Pods-LudoApp-LudoAppTests/Pods-LudoApp-LudoAppTests.release.xcconfig"; sourceTree = "<group>"; };
+		8DD4E68476FCCE2C1E81A243 /* home.mp3 */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = audio.mp3; path = home.mp3; sourceTree = "<group>"; };
+		C36FBD309D3EF8D1BAAC73D4 /* game_start.mp3 */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = audio.mp3; path = game_start.mp3; sourceTree = "<group>"; };
+		C7B2211787C8A158AEE8F6E6 /* pile_move.mp3 */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = audio.mp3; path = pile_move.mp3; sourceTree = "<group>"; };
+		C96E86C650955CDCCC04E414 /* girl4.mp3 */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = audio.mp3; path = girl4.mp3; sourceTree = "<group>"; };
+		D3828868CA6D1E3B3ACBA353 /* dice_roll.mp3 */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = audio.mp3; path = dice_roll.mp3; sourceTree = "<group>"; };
+		E9AFDCC82CCFAD17F1461F65 /* ui.mp3 */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = audio.mp3; path = ui.mp3; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F3FA8FB3D42CB1312CD06214 /* collide.mp3 */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = audio.mp3; path = collide.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +120,19 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
+				785705669F8B68EC8D314890 /* cheer.mp3 */,
+				F3FA8FB3D42CB1312CD06214 /* collide.mp3 */,
+				D3828868CA6D1E3B3ACBA353 /* dice_roll.mp3 */,
+				C36FBD309D3EF8D1BAAC73D4 /* game_start.mp3 */,
+				796B2303643030610B72F3BB /* girl1.mp3 */,
+				3F41A4074CF0D9F2DA03DED4 /* girl2.mp3 */,
+				653111570AAC8B7C8FAC8711 /* girl3.mp3 */,
+				C96E86C650955CDCCC04E414 /* girl4.mp3 */,
+				8DD4E68476FCCE2C1E81A243 /* home.mp3 */,
+				56A4570F3178F6EF485348F7 /* home_win.mp3 */,
+				C7B2211787C8A158AEE8F6E6 /* pile_move.mp3 */,
+				3FD237A79924ACCA645C68CC /* safe_spot.mp3 */,
+				E9AFDCC82CCFAD17F1461F65 /* ui.mp3 */,
 			);
 			name = LudoApp;
 			sourceTree = "<group>";
@@ -247,6 +286,19 @@
 				6132EF182BDFF13200BBE14D /* PrivacyInfo.xcprivacy in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				EB1D86C8EC81D946DE205544 /* cheer.mp3 in Resources */,
+				0DE10C188B3F4E9462C248AE /* collide.mp3 in Resources */,
+				39F7C6D537E97801F8BE1B50 /* dice_roll.mp3 in Resources */,
+				40730844E85D7FED32812C21 /* game_start.mp3 in Resources */,
+				7E5CBE3DC92C0B4C1942E596 /* girl1.mp3 in Resources */,
+				FE0755D91FCA4E5DBF301B0E /* girl2.mp3 in Resources */,
+				27A9598EA009123B4045768B /* girl3.mp3 in Resources */,
+				0B3956E60905070ED5C1136B /* girl4.mp3 in Resources */,
+				7594999DBDC74C503B33F6DE /* home.mp3 in Resources */,
+				A6797A524CAE6DB6C7CA8D2A /* home_win.mp3 in Resources */,
+				B407C2D7324D8ADDA86F6173 /* pile_move.mp3 in Resources */,
+				3C32382668115F79ABB3A16C /* safe_spot.mp3 in Resources */,
+				75F4311E6CA86F3E2A366140 /* ui.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
