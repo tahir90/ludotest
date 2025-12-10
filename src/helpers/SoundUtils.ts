@@ -374,44 +374,63 @@ export const muteMusic = async () => {
 }
 
 export const unmuteMusic = async () => {
-    console.log('Unmuting music...');
+    console.log('🔊 === UNMUTING MUSIC ===');
     isMusicMuted = false;
     try {
-        // Restore volume (use saved volume or default to 0.4 for background)
-        const volumeToRestore = currentVolume > 0 ? currentVolume : 0.5;
-        console.log('Restoring volume to:', volumeToRestore);
+        // Restore volume (use saved volume or default to 1.0 for full volume)
+        const volumeToRestore = currentVolume > 0 ? currentVolume : 1.0;
+        console.log('Restoring music volume to:', volumeToRestore);
         
-        if (volumeManager && typeof volumeManager.setVolume === 'function') {
-            try {
-                await volumeManager.setVolume(volumeToRestore);
-                console.log('Volume restored to:', volumeToRestore, 'via VolumeManager');
-            } catch (e) {
-                console.log('Error setting volume:', e);
-            }
+        if (backgroundMusicInstance) {
+            // Use react-native-sound volume control
+            backgroundMusicInstance.setVolume(volumeToRestore);
+            backgroundMusicInstance.play((success) => {
+                if (success) {
+                    console.log('✅ Background music resumed (react-native-sound)');
+                } else {
+                    console.error('❌ Failed to resume background music');
+                }
+            });
+            currentVolume = volumeToRestore;
         } else {
-            console.warn('VolumeManager.setVolume not available - resuming sound only');
-        }
-        
-        currentVolume = volumeToRestore;
-        
-        if (isLooping && currentLoopSound) {
-            const soundPath = getSoundPath(currentLoopSound);
-            SoundPlayer.playAsset(soundPath);
-            console.log('Sound resumed');
+            // Fallback to system volume if using SoundPlayer
+            if (volumeManager && typeof volumeManager.setVolume === 'function') {
+                try {
+                    await volumeManager.setVolume(volumeToRestore);
+                    console.log('System volume restored to:', volumeToRestore, 'via VolumeManager');
+                } catch (e) {
+                    console.log('Error setting system volume:', e);
+                }
+            } else {
+                console.warn('VolumeManager.setVolume not available - resuming sound only');
+            }
+            
+            currentVolume = volumeToRestore;
+            
+            if (isLooping && currentLoopSound) {
+                const soundPath = getSoundPath(currentLoopSound);
+                SoundPlayer.playAsset(soundPath);
+                console.log('✅ Background music resumed (SoundPlayer)');
+            }
         }
     } catch (err) {
         console.error("Can't unmute music", err);
         // Fallback: just resume sound
         if (isLooping && currentLoopSound) {
             try {
-                const soundPath = getSoundPath(currentLoopSound);
-                SoundPlayer.playAsset(soundPath);
+                if (backgroundMusicInstance) {
+                    backgroundMusicInstance.play();
+                } else {
+                    const soundPath = getSoundPath(currentLoopSound);
+                    SoundPlayer.playAsset(soundPath);
+                }
             } catch (e) {
                 console.error("Can't resume sound", e);
             }
         }
     }
     console.log('Music unmuted, isMusicMuted:', isMusicMuted);
+    console.log('🔊 === END UNMUTING MUSIC ===');
 }
 
 export const toggleMusicMute = async (): Promise<boolean> => {
@@ -430,14 +449,41 @@ export const getMusicMuted = (): boolean => {
 
 export const stopSound = () => {
     try {
-        console.log('Stopping sound completely');
+        console.log('🛑 Stopping all background music completely');
         isLooping = false;
         currentLoopSound = null;
         isMusicPlaying = false;
         isMusicMuted = true; // Mark as muted when stopped
-        // Clear the handler reference
-        finishedPlayingHandler = null;
-        SoundPlayer.stop();
+        
+        // Stop react-native-sound instance if exists
+        if (backgroundMusicInstance) {
+            try {
+                backgroundMusicInstance.stop();
+                backgroundMusicInstance.release();
+                backgroundMusicInstance = null;
+                console.log('✅ Background music stopped and released (react-native-sound)');
+            } catch (e) {
+                console.error('❌ Error stopping react-native-sound:', e);
+            }
+        }
+        
+        // Clear the handler reference for SoundPlayer
+        if (finishedPlayingHandler) {
+            try {
+                SoundPlayer.removeEventListener('FinishedPlaying');
+            } catch (e) {
+                // Ignore if listener doesn't exist
+            }
+            finishedPlayingHandler = null;
+        }
+        
+        // Stop SoundPlayer as fallback
+        try {
+            SoundPlayer.stop();
+            console.log('✅ Background music stopped (SoundPlayer)');
+        } catch (e) {
+            console.error('❌ Error stopping SoundPlayer:', e);
+        }
     } catch (err) {
         console.error("Can't stop the sound", err);
     }
