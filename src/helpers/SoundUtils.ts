@@ -1,7 +1,7 @@
 import { SOUNDS } from "$assets/sfx";
 import SoundPlayer from "react-native-sound-player";
 import Sound from "react-native-sound";
-import { Platform } from 'react-native';
+import { Platform, AppState, AppStateStatus } from 'react-native';
 
 // Enable playback in silence mode
 Sound.setCategory('Playback', true); // true = mixWithOthers
@@ -17,10 +17,13 @@ try {
 
 // Volume state management
 let currentVolume: number = 1.0;
+let originalUserVolume: number | null = null; // Store user's original system volume
 let isMusicMuted: boolean = false; // Only affects background music
 let isLooping: boolean = false;
 let currentLoopSound: SOUND_NAME | null = null;
 let isMusicPlaying: boolean = false;
+let wasPlayingBeforeBackground: boolean = false; // Track if music was playing before background
+let appStateSubscription: any = null;
 // Note: Background music uses react-native-sound-player (works with Metro assets)
 // Volume is controlled via react-native-volume-manager (system volume)
 
@@ -132,8 +135,133 @@ const handleFinishedPlaying = () => {
     }
 };
 
+// Initialize and store user's original volume - ALWAYS fetches current system volume
+export const initializeVolume = async (forceRefresh: boolean = false) => {
+    try {
+        if (volumeManager && typeof volumeManager.getVolume === 'function') {
+            const result = await volumeManager.getVolume();
+            const volume = result?.volume || result;
+            if (typeof volume === 'number' && volume >= 0) {
+                // Always update original volume if forceRefresh is true or if not set
+                if (forceRefresh || originalUserVolume === null) {
+                    originalUserVolume = volume;
+                    console.log('💾 Initialized/Refreshed original user volume:', originalUserVolume);
+                }
+                // Always update currentVolume to reflect actual system volume
+                if (originalUserVolume !== null && originalUserVolume > 0) {
+                    currentVolume = volume / originalUserVolume;
+                } else {
+                    currentVolume = volume;
+                }
+                return volume;
+            }
+        }
+    } catch (err) {
+        console.error("Can't initialize volume", err);
+    }
+    // Fallback: if we can't get volume, assume user wants full volume
+    if (originalUserVolume === null) {
+        originalUserVolume = 1.0;
+        currentVolume = 1.0;
+    }
+    return originalUserVolume || 1.0;
+};
+
+// Get current system volume and update our reference
+export const refreshCurrentSystemVolume = async (): Promise<number> => {
+    try {
+        if (volumeManager && typeof volumeManager.getVolume === 'function') {
+            const result = await volumeManager.getVolume();
+            const volume = result?.volume || result;
+            if (typeof volume === 'number' && volume >= 0) {
+                // Update original volume to current system volume
+                originalUserVolume = volume;
+                // Reset relative volume to 1.0 (full) since we're using current system volume as baseline
+                currentVolume = 1.0;
+                console.log('🔄 Refreshed system volume to:', volume);
+                return volume;
+            }
+        }
+    } catch (err) {
+        console.error("Can't refresh volume", err);
+    }
+    return originalUserVolume || 1.0;
+};
+
+// Handle app state changes
+const handleAppStateChange = (nextAppState: AppStateStatus) => {
+    console.log('📱 App state changed to:', nextAppState);
+    
+    if (nextAppState === 'background' || nextAppState === 'inactive') {
+        // App is going to background - pause/stop all media
+        console.log('⏸️ App going to background - pausing media');
+        wasPlayingBeforeBackground = isMusicPlaying && !isMusicMuted;
+        pauseAllMedia();
+    } else if (nextAppState === 'active') {
+        // App is coming to foreground - refresh volume and resume if needed
+        console.log('▶️ App coming to foreground - refreshing volume');
+        refreshCurrentSystemVolume().then(() => {
+            if (wasPlayingBeforeBackground && !isMusicMuted) {
+                // Resume music if it was playing before
+                resumeAllMedia();
+            }
+        });
+    }
+};
+
+// Setup app state listener
+export const setupAppStateListener = () => {
+    if (appStateSubscription) {
+        return; // Already set up
+    }
+    
+    // Initialize volume on first setup
+    initializeVolume(true).catch(err => console.error('Error initializing volume:', err));
+    
+    // Listen to app state changes
+    appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
+    console.log('✅ App state listener set up');
+};
+
+// Remove app state listener
+export const removeAppStateListener = () => {
+    if (appStateSubscription) {
+        appStateSubscription.remove();
+        appStateSubscription = null;
+        console.log('✅ App state listener removed');
+    }
+};
+
+// Pause all media when app goes to background
+const pauseAllMedia = () => {
+    try {
+        if (isMusicPlaying) {
+            SoundPlayer.stop();
+            console.log('✅ All media paused (app in background)');
+        }
+    } catch (e) {
+        console.error('❌ Error pausing media:', e);
+    }
+};
+
+// Resume all media when app comes to foreground
+const resumeAllMedia = () => {
+    try {
+        if (isLooping && currentLoopSound && !isMusicMuted) {
+            const soundPath = getSoundPath(currentLoopSound);
+            SoundPlayer.playAsset(soundPath);
+            console.log('✅ Media resumed (app in foreground)');
+        }
+    } catch (e) {
+        console.error('❌ Error resuming media:', e);
+    }
+};
+
 export const playSound = async (soundName: SOUND_NAME, loop: boolean = false, volume: number = 1.0) => {
     try {
+        // ALWAYS refresh current system volume before playing
+        await refreshCurrentSystemVolume();
+        
         const soundPath = getSoundPath(soundName);
         
         if (loop) {
@@ -240,19 +368,33 @@ export const playSound = async (soundName: SOUND_NAME, loop: boolean = false, vo
 
 export const setMusicVolume = async (volume: number) => {
     try {
-        currentVolume = Math.max(0, Math.min(1, volume)); // Clamp between 0 and 1
+        // ALWAYS refresh current system volume before adjusting
+        await refreshCurrentSystemVolume();
+        
+        // Clamp volume between 0 and 1
+        const relativeVolume = Math.max(0, Math.min(1, volume));
+        
+        // Calculate actual system volume based on user's current system volume
+        // volume = 1.0 means "full" (user's current system volume)
+        // volume = 0.5 means "50%" (50% of user's current system volume)
+        const actualSystemVolume = originalUserVolume !== null 
+            ? relativeVolume * originalUserVolume 
+            : relativeVolume;
+        
+        currentVolume = relativeVolume; // Store relative volume for reference
+        
         console.log('🔊 === SETTING MUSIC VOLUME ===');
-        console.log('Target volume:', currentVolume, `(${Math.round(currentVolume * 100)}%)`);
+        console.log('Relative volume (app level):', relativeVolume, `(${Math.round(relativeVolume * 100)}%)`);
+        console.log('User current system volume:', originalUserVolume);
+        console.log('Actual system volume to set:', actualSystemVolume, `(${Math.round(actualSystemVolume * 100)}%)`);
         console.log('Platform:', Platform.OS);
         console.log('VolumeManager available:', !!volumeManager);
         console.log('Has setVolume:', typeof volumeManager?.setVolume === 'function');
         
-        // Set system media volume (0.0 to 1.0)
+        // Set system media volume (calculated based on user's current system volume)
         if (volumeManager && typeof volumeManager.setVolume === 'function') {
             try {
-                // On iOS, we need to ensure the volume is set correctly
-                // The volume manager should handle iOS-specific requirements
-                const result = await volumeManager.setVolume(currentVolume);
+                const result = await volumeManager.setVolume(actualSystemVolume);
                 console.log('✅ VolumeManager.setVolume called, result:', result);
                 
                 // Verify the volume was set (iOS might need a small delay)
@@ -284,14 +426,8 @@ export const setMusicVolume = async (volume: number) => {
 
 export const getMusicVolume = async (): Promise<number> => {
     try {
-        if (volumeManager && typeof volumeManager.getVolume === 'function') {
-            const result = await volumeManager.getVolume();
-            const volume = result?.volume || result;
-            if (typeof volume === 'number') {
-                currentVolume = volume;
-                return volume;
-            }
-        }
+        // Always refresh to get current system volume
+        await refreshCurrentSystemVolume();
         return currentVolume;
     } catch (err) {
         console.error("Can't get volume", err);
@@ -315,22 +451,9 @@ export const muteMusic = async () => {
             console.error('❌ Error stopping music:', e);
         }
         
-        // Save current volume for when we unmute (but don't change it now!)
-        if (volumeManager && typeof volumeManager.getVolume === 'function') {
-            try {
-                const result = await volumeManager.getVolume();
-                const volume = result?.volume || result;
-                if (typeof volume === 'number' && volume > 0) {
-                    currentVolume = volume;
-                    console.log('💾 Saved current volume:', currentVolume);
-                }
-            } catch (e) {
-                console.log('⚠️ Could not get volume, keeping current:', currentVolume);
-            }
-        }
-        
-        // DO NOT SET SYSTEM VOLUME TO 0
-        // That would mute ALL sounds including dice roll!
+        // Save current relative volume for when we unmute (but don't change system volume!)
+        // The system volume should remain unchanged so sound effects still work
+        console.log('💾 Saved current relative volume:', currentVolume);
         console.log('✅ Music muted - system volume unchanged for sound effects');
         
     } catch (err) {
@@ -346,15 +469,24 @@ export const unmuteMusic = async () => {
     console.log('🔊 === UNMUTING MUSIC ===');
     isMusicMuted = false;
     try {
-        // Restore volume (use saved volume or default to 1.0 for full volume)
-        const volumeToRestore = currentVolume > 0 ? currentVolume : 1.0;
-        console.log('Restoring music volume to:', volumeToRestore);
+        // ALWAYS refresh current system volume before unmuting
+        await refreshCurrentSystemVolume();
         
-        // Restore system volume
+        // Restore to the saved relative volume (or default to full if not set)
+        const relativeVolumeToRestore = currentVolume > 0 ? currentVolume : 1.0;
+        
+        // Calculate actual system volume based on user's current system volume
+        const actualSystemVolume = originalUserVolume !== null 
+            ? relativeVolumeToRestore * originalUserVolume 
+            : relativeVolumeToRestore;
+        
+        console.log('Restoring music volume - Relative:', relativeVolumeToRestore, 'System:', actualSystemVolume);
+        
+        // Restore system volume to respect user's current settings
         if (volumeManager && typeof volumeManager.setVolume === 'function') {
             try {
-                await volumeManager.setVolume(volumeToRestore);
-                console.log('System volume restored to:', volumeToRestore, 'via VolumeManager');
+                await volumeManager.setVolume(actualSystemVolume);
+                console.log('System volume restored to:', actualSystemVolume, 'via VolumeManager');
             } catch (e) {
                 console.log('Error setting system volume:', e);
             }
@@ -362,7 +494,7 @@ export const unmuteMusic = async () => {
             console.warn('VolumeManager.setVolume not available - resuming sound only');
         }
         
-        currentVolume = volumeToRestore;
+        currentVolume = relativeVolumeToRestore;
         
         if (isLooping && currentLoopSound) {
             const soundPath = getSoundPath(currentLoopSound);
@@ -410,7 +542,10 @@ export const stopSound = () => {
         // Clear the handler reference for SoundPlayer
         if (finishedPlayingHandler) {
             try {
-                SoundPlayer.removeEventListener('FinishedPlaying');
+                // Note: react-native-sound-player may not have removeEventListener
+                if (typeof (SoundPlayer as any).removeEventListener === 'function') {
+                    (SoundPlayer as any).removeEventListener('FinishedPlaying');
+                }
             } catch (e) {
                 // Ignore if listener doesn't exist
             }
