@@ -88,6 +88,32 @@ export const getSoundFileName = (soundName: SOUND_NAME): string => {
     }
 }
 
+// Helper function to play a loaded sound effect
+const playSoundEffect = (soundEffect: Sound, soundName: SOUND_NAME) => {
+    try {
+        console.log('✅ Sound loaded:', soundName, 'duration:', soundEffect.getDuration() + 's');
+        
+        // Set volume to 100% for sound effects
+        soundEffect.setVolume(1.0);
+        console.log('🔊 Volume set to 100% (1.0)');
+        
+        // Play the sound effect (will play simultaneously with background music)
+        console.log('▶️ Playing sound effect...');
+        soundEffect.play((success) => {
+            if (success) {
+                console.log('✅ Sound effect played successfully:', soundName);
+            } else {
+                console.error('❌ Playback failed:', soundName);
+            }
+            // Release the sound after playing
+            soundEffect.release();
+            console.log('🗑️ Sound released:', soundName);
+        });
+    } catch (err) {
+        console.error('❌ Error playing sound effect:', soundName, err);
+    }
+};
+
 let finishedPlayingHandler: (() => void) | null = null;
 
 const handleFinishedPlaying = () => {
@@ -154,35 +180,37 @@ export const playSound = async (soundName: SOUND_NAME, loop: boolean = false, vo
             
             // Sound effects ALWAYS play (independent of music mute)
             try {
-                // Get filename (without .mp3 extension for native resources)
+                // Get filename for native resources
+                // On iOS, react-native-sound with MAIN_BUNDLE expects just the filename without extension
+                // On Android, it expects filename with extension
                 const fileName = getSoundFileName(soundName).replace('.mp3', '');
-                console.log('📁 Loading from native:', fileName);
+                console.log('📁 Loading from native:', fileName, 'Platform:', Platform.OS);
+                
+                // For iOS, use filename without extension; for Android, use with extension
+                const soundPath = Platform.OS === 'ios' ? fileName : (fileName + '.mp3');
                 
                 // Create Sound instance from native resources (MAIN_BUNDLE)
-                const soundEffect = new Sound(fileName + '.mp3', Sound.MAIN_BUNDLE, (error) => {
+                const soundEffect = new Sound(soundPath, Sound.MAIN_BUNDLE, (error) => {
                     if (error) {
+                        // On iOS, if loading without extension fails, try with extension as fallback
+                        if (Platform.OS === 'ios' && !soundPath.endsWith('.mp3')) {
+                            console.log('⚠️ iOS: Retrying with .mp3 extension...');
+                            const soundEffectRetry = new Sound(fileName + '.mp3', Sound.MAIN_BUNDLE, (retryError) => {
+                                if (retryError) {
+                                    console.error('❌ Failed to load sound (both attempts):', fileName, retryError);
+                                    console.error('💡 Make sure sound files are in the iOS app bundle');
+                                    return;
+                                }
+                                playSoundEffect(soundEffectRetry, soundName);
+                            });
+                            return;
+                        }
                         console.error('❌ Failed to load sound:', fileName, error);
+                        console.error('💡 Make sure sound files are in the app bundle');
                         return;
                     }
                     
-                    console.log('✅ Sound loaded:', fileName, 'duration:', soundEffect.getDuration() + 's');
-                    
-                    // Set volume to 100% for sound effects
-                    soundEffect.setVolume(1.0);
-                    console.log('🔊 Volume set to 100% (1.0)');
-                    
-                    // Play the sound effect (will play simultaneously with background music)
-                    console.log('▶️ Playing sound effect...');
-                    soundEffect.play((success) => {
-                        if (success) {
-                            console.log('✅ Sound effect played successfully:', soundName);
-                        } else {
-                            console.error('❌ Playback failed:', soundName);
-                        }
-                        // Release the sound after playing
-                        soundEffect.release();
-                        console.log('🗑️ Sound released:', soundName);
-                    });
+                    playSoundEffect(soundEffect, soundName);
                 });
                 
             } catch (err) {
