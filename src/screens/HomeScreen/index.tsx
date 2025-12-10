@@ -44,13 +44,14 @@ const HomeScreen = () => {
 
   useEffect(() => {
     if (isFocused) {
-      playSound('home', true); // Enable looping for background music
+      // Restore full volume on home screen - NEVER restart music
+      // If music is already playing, it will just adjust volume
+      // If not playing, it will start
+      playSound('home', true, 1.0).catch(err => console.error('Error adjusting music:', err));
     }
     return () => {
-      // Cleanup when leaving screen
-      if (!isFocused) {
-        stopSound();
-      }
+      // Don't stop music when leaving home - let it continue playing
+      // Only stop when explicitly needed (like app close)
     };
   }, [isFocused]);
 
@@ -190,8 +191,8 @@ const HomeScreen = () => {
         {/* Quick Actions Row */}
         <View style={styles.quickActionsRow}>
           <QuickActionCard
-            title="3 1 2"
-            value=""
+            title=""
+            value="3 1 2"
             icon={<TrophyIcon size={30} color={COLORS.gold} />}
             onPress={() => navigate('LeaderboardScreen', {})}
           />
@@ -210,19 +211,31 @@ const HomeScreen = () => {
           <View style={styles.gameModesRow}>
             <GameModeCard
               title="2 Player"
-              icon={<Text style={styles.gameModeNumber}>2</Text>}
+              icon={
+                <View style={styles.numberIconWrapper}>
+                  <Text style={styles.gameModeNumber}>2</Text>
+                </View>
+              }
               onPress={() => handleGameModePress('2 Player')}
             />
             <GameModeCard
               title="4 Player"
-              icon={<Text style={styles.gameModeNumber}>4</Text>}
+              icon={
+                <View style={styles.numberIconWrapper}>
+                  <Text style={styles.gameModeNumber}>4</Text>
+                </View>
+              }
               onPress={() => handleGameModePress('4 Player')}
             />
           </View>
           <View style={styles.gameModesRow}>
             <GameModeCard
               title="Private Table"
-              icon={<Text style={styles.gameModeIcon}>🎲</Text>}
+              icon={
+                <View style={styles.emojiIconWrapper}>
+                  <Text style={styles.gameModeIcon}>🎲</Text>
+                </View>
+              }
               onPress={handleComingSoon}
             />
             <GameModeCard

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { COLORS } from '$constants/colors';
@@ -14,6 +14,7 @@ import {
   BellIcon,
   ChatBubbleLeftRightIcon,
 } from 'react-native-heroicons/solid';
+import { stopSound, playSound, getMusicMuted, unmuteMusic } from '$helpers/SoundUtils';
 
 interface SettingItemProps {
   icon: React.ReactNode;
@@ -70,6 +71,24 @@ const SettingsScreen: React.FC = () => {
   const [notifEnabled, setNotifEnabled] = useState(true);
   const [chatNotifEnabled, setChatNotifEnabled] = useState(true);
 
+  // Initialize music state
+  useEffect(() => {
+    const isMuted = getMusicMuted();
+    setMusicEnabled(!isMuted);
+  }, []);
+
+  const handleMusicToggle = async (value: boolean) => {
+    setMusicEnabled(value);
+    if (value) {
+      // Turn music on - unmute and start playing at full volume
+      await unmuteMusic();
+      await playSound('home', true, 1.0);
+    } else {
+      // Turn music off - stop completely
+      stopSound();
+    }
+  };
+
   return (
     <Wrapper style={{ justifyContent: 'flex-start', paddingTop: 0 }}>
       <TopNav title="Settings" showBack={true} />
@@ -116,7 +135,7 @@ const SettingsScreen: React.FC = () => {
               icon={<MusicalNoteIcon size={24} color={COLORS.white} />}
               label="Music"
               value={musicEnabled}
-              onToggle={setMusicEnabled}
+              onToggle={handleMusicToggle}
             />
             <ToggleItem
               icon={<Text style={styles.vibrationIcon}>📳</Text>}

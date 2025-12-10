@@ -36,13 +36,21 @@ export const GameModeCard: React.FC<GameModeCardProps> = ({
         end={{ x: 1, y: 1 }}
       >
         <View style={styles.content}>
-          {icon}
-          <Text style={styles.title}>{title}</Text>
-          {timer && <Text style={styles.timer}>{timer}</Text>}
-          {locked && (
-            <View style={styles.lockOverlay}>
-              <Text style={styles.lockIcon}>🔒</Text>
-            </View>
+          <View style={styles.iconContainer}>
+            {icon}
+            {locked && (
+              <View style={styles.lockOverlay}>
+                <Text style={styles.lockIcon}>🔒</Text>
+              </View>
+            )}
+          </View>
+          <Text style={styles.title} numberOfLines={2} adjustsFontSizeToFit>
+            {title}
+          </Text>
+          {timer && (
+            <Text style={styles.timer} numberOfLines={1}>
+              {timer}
+            </Text>
           )}
         </View>
       </LinearGradient>
@@ -78,13 +86,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
   },
+  iconContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    flex: 1,
+  },
   title: {
     color: COLORS.white,
-    fontSize: RFValue(16),
+    fontSize: RFValue(14),
     fontFamily: 'Philosopher-Bold',
     fontWeight: 'bold',
-    marginTop: 10,
     textAlign: 'center',
+    width: '100%',
+    paddingTop: 4,
+    paddingBottom: 4,
   },
   timer: {
     color: COLORS.gold,
@@ -94,8 +111,11 @@ const styles = StyleSheet.create({
   },
   lockOverlay: {
     position: 'absolute',
-    top: 5,
-    right: 5,
+    top: -5,
+    right: -5,
+    backgroundColor: COLORS.cardBackground,
+    borderRadius: 10,
+    padding: 2,
   },
   lockIcon: {
     fontSize: RFValue(20),

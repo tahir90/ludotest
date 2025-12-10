@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { COLORS } from '$constants/colors';
@@ -7,8 +7,23 @@ import TopNav from '$components/layout/TopNav';
 import BottomNav from '$components/layout/BottomNav';
 import { PrimaryButton } from '$components/common';
 import { navigate } from '$helpers/navigationUtils';
+import { useIsFocused } from '@react-navigation/native';
+import { setMusicVolume } from '$helpers/SoundUtils';
 
 const ChestScreen: React.FC = () => {
+  const isFocused = useIsFocused();
+
+  // Music control - restore volume when leaving, but don't restart
+  useEffect(() => {
+    if (isFocused) {
+      // Just ensure volume is at full when on this screen
+      setMusicVolume(1.0).catch(err => console.error('Error setting volume:', err));
+    } else {
+      // Restore full volume when leaving this screen
+      setMusicVolume(1.0).catch(err => console.error('Error restoring volume:', err));
+    }
+  }, [isFocused]);
+
   return (
     <Wrapper style={{ justifyContent: 'flex-start', paddingTop: 0 }}>
       <TopNav title="Chest" showBack={true} />

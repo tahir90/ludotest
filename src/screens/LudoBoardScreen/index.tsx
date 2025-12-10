@@ -17,7 +17,7 @@ import { DEVICE_HEIGHT, DEVICE_WIDTH } from '$constants/dimensions'
 import MenuModal from '$components/MenuModal'
 import WinnerModal from '$components/WinnerModal'
 import { SpeakerWaveIcon, SpeakerXMarkIcon } from 'react-native-heroicons/solid'
-import { playSound, toggleMusicMute, stopSound } from '$helpers/SoundUtils'
+import { playSound, toggleMusicMute, getMusicMuted, stopSound, setMusicVolume } from '$helpers/SoundUtils'
 
 const LudoBoardScreen = () => {
 
@@ -40,8 +40,13 @@ const LudoBoardScreen = () => {
   useEffect(() => {
     if(isFocused){
       setShowStartIMG(true);
-      // Start background music at reduced volume (0.2 = 20% volume for subtle background)
-      playSound('home', true, 0.2);
+      // Initialize mute state
+      setIsMusicMuted(getMusicMuted());
+      
+      // Just adjust volume to 40% without restarting music
+      // If music is already playing, it will just change volume
+      // If not playing, it will start
+      playSound('home', true, 0.4).catch(err => console.error('Error adjusting music:', err));
       
       const blinkAnimation = Animated.loop(Animated.sequence([
         Animated.timing(opacity,{
@@ -66,13 +71,15 @@ const LudoBoardScreen = () => {
       return () => {
         blinkAnimation.stop();
         clearTimeout(timeout);
-        stopSound();
       }
+    } else {
+      // Restore full volume when leaving this screen
+      setMusicVolume(1.0).catch(err => console.error('Error restoring volume:', err));
     }
   },[isFocused])
 
-  const handleMusicMuteToggle = () => {
-    const muted = toggleMusicMute();
+  const handleMusicMuteToggle = async () => {
+    const muted = await toggleMusicMute();
     setIsMusicMuted(muted);
   };
 

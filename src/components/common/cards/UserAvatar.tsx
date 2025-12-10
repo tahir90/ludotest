@@ -51,8 +51,12 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
         end={{ x: 1, y: 1 }}
       >
         <View style={[styles.avatarContainer, { width: size - 4, height: size - 4 }]}>
-          {avatar ? (
-            <Image source={{ uri: avatar }} style={styles.avatarImage} />
+          {avatar && (avatar.startsWith('http://') || avatar.startsWith('https://')) ? (
+            <Image 
+              source={{ uri: avatar }} 
+              style={styles.avatarImage}
+              defaultSource={require('$assets/images/dice/1.png')}
+            />
           ) : (
             <View style={styles.avatarPlaceholder}>
               <Text style={[styles.avatarText, { fontSize: RFValue(size * 0.4) }]}>

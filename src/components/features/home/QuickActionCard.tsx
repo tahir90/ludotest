@@ -35,14 +35,28 @@ export const QuickActionCard: React.FC<QuickActionCardProps> = ({
         end={{ x: 1, y: 1 }}
       >
         <View style={styles.content}>
-          {icon}
-          <Text style={styles.value}>{value}</Text>
-          <Text style={styles.title}>{title}</Text>
-          {timer && <Text style={styles.timer}>{timer}</Text>}
-          {locked && (
-            <View style={styles.lockOverlay}>
-              <Text style={styles.lockIcon}>🔒</Text>
-            </View>
+          <View style={styles.iconContainer}>
+            {icon}
+            {locked && (
+              <View style={styles.lockOverlay}>
+                <Text style={styles.lockIcon}>🔒</Text>
+              </View>
+            )}
+          </View>
+          {value ? (
+            <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit>
+              {value}
+            </Text>
+          ) : null}
+          {title ? (
+            <Text style={styles.title} numberOfLines={2} adjustsFontSizeToFit>
+              {title}
+            </Text>
+          ) : null}
+          {timer && (
+            <Text style={styles.timer} numberOfLines={1}>
+              {timer}
+            </Text>
           )}
         </View>
       </LinearGradient>
@@ -78,19 +92,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 8,
   },
+  iconContainer: {
+    position: 'relative',
+    marginBottom: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: 30,
+  },
   value: {
     color: COLORS.gold,
     fontSize: RFValue(20),
     fontFamily: 'Philosopher-Bold',
     fontWeight: 'bold',
-    marginTop: 5,
+    marginTop: 0,
+    textAlign: 'center',
+    width: '100%',
+    includeFontPadding: false,
   },
   title: {
     color: COLORS.white,
-    fontSize: RFValue(10),
+    fontSize: RFValue(12),
     fontFamily: 'Philosopher-Bold',
     textAlign: 'center',
-    marginTop: 5,
+    marginTop: 4,
+    width: '100%',
+    lineHeight: RFValue(14),
+    includeFontPadding: false,
   },
   timer: {
     color: COLORS.lightText,
@@ -100,8 +128,11 @@ const styles = StyleSheet.create({
   },
   lockOverlay: {
     position: 'absolute',
-    top: 5,
-    right: 5,
+    top: -5,
+    right: -5,
+    backgroundColor: COLORS.cardBackground,
+    borderRadius: 10,
+    padding: 2,
   },
   lockIcon: {
     fontSize: RFValue(16),

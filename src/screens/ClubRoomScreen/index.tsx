@@ -28,7 +28,7 @@ import {
 } from 'react-native-heroicons/solid';
 import { useRoute, useIsFocused } from '@react-navigation/native';
 import { useUser } from '$hooks/useUser';
-import { playSound, toggleMusicMute, getMusicMuted, stopSound } from '$helpers/SoundUtils';
+import { playSound, toggleMusicMute, getMusicMuted, stopSound, setMusicVolume } from '$helpers/SoundUtils';
 
 const ClubRoomScreen: React.FC = () => {
   const route = useRoute();
@@ -70,18 +70,21 @@ const ClubRoomScreen: React.FC = () => {
   // Music control
   useEffect(() => {
     if (isFocused) {
-      // Start background music at reduced volume (0.2 = 20% volume for subtle background)
-      playSound('home', true, 0.2);
+      // Initialize mute state
+      setIsMusicMuted(getMusicMuted());
+      
+      // Just adjust volume to 40% without restarting music
+      // If music is already playing, it will just change volume
+      // If not playing, it will start
+      playSound('home', true, 0.4).catch(err => console.error('Error adjusting music:', err));
+    } else {
+      // Restore full volume when leaving this screen
+      setMusicVolume(1.0).catch(err => console.error('Error restoring volume:', err));
     }
-    return () => {
-      if (!isFocused) {
-        stopSound();
-      }
-    };
   }, [isFocused]);
 
-  const handleMusicMuteToggle = () => {
-    const muted = toggleMusicMute();
+  const handleMusicMuteToggle = async () => {
+    const muted = await toggleMusicMute();
     setIsMusicMuted(muted);
   };
 

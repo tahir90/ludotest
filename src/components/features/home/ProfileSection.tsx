@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 5,
+    flexWrap: 'wrap',
   },
   level: {
     color: COLORS.gold,
