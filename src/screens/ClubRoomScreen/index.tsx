@@ -29,10 +29,14 @@ import {
 import { useRoute, useIsFocused } from '@react-navigation/native';
 import { useUser } from '$hooks/useUser';
 import { playSound, toggleMusicMute, getMusicMuted, stopSound, setMusicVolume } from '$helpers/SoundUtils';
+import { GiftAnimationProvider, useGiftAnimation, GiftCatalogBottomSheet } from '$components/features/gifting';
+import { GIFT_CATALOG } from '$constants/config';
+import { Gift } from '$types';
 
-const ClubRoomScreen: React.FC = () => {
+const ClubRoomScreenContent: React.FC = () => {
   const route = useRoute();
   const { user: currentUser } = useUser();
+  const { triggerGiftAnimation } = useGiftAnimation();
   const clubId = (route.params as any)?.clubId || mockMyClub.id;
   const club = mockMyClub;
 
@@ -43,6 +47,7 @@ const ClubRoomScreen: React.FC = () => {
   const [isMuted, setIsMuted] = useState(false); // Voice chat mute
   const [isMicOn, setIsMicOn] = useState(false);
   const [isMusicMuted, setIsMusicMuted] = useState(false);
+  const [showGiftSheet, setShowGiftSheet] = useState(false);
   const isFocused = useIsFocused();
 
   const handleSendMessage = () => {
@@ -64,7 +69,27 @@ const ClubRoomScreen: React.FC = () => {
   };
 
   const handleGiftPress = () => {
-    navigate('GiftShopScreen', { clubId: club.id });
+    setShowGiftSheet(true);
+  };
+
+  const handleGiftSend = (gift: Gift, quantity: number) => {
+    // Trigger animation when gift is sent
+    if (currentUser) {
+      triggerGiftAnimation(
+        gift,
+        {
+          username: currentUser.username,
+          avatar: currentUser.avatar,
+        },
+        {
+          username: club.ownerUsername || 'Club Owner',
+          avatar: '',
+        },
+        quantity
+      );
+    }
+    // Here you would also handle the actual gift sending logic
+    // (deduct crowns, send to backend, etc.)
   };
 
   // Music control
@@ -257,7 +282,26 @@ const ClubRoomScreen: React.FC = () => {
       </View>
 
       <BottomNav />
+
+      {/* Gift Catalog Bottom Sheet */}
+      <GiftCatalogBottomSheet
+        visible={showGiftSheet}
+        onClose={() => setShowGiftSheet(false)}
+        onGiftSend={handleGiftSend}
+        recipient={{
+          username: club.ownerUsername || 'Club Owner',
+          avatar: '',
+        }}
+      />
     </Wrapper>
+  );
+};
+
+const ClubRoomScreen: React.FC = () => {
+  return (
+    <GiftAnimationProvider>
+      <ClubRoomScreenContent />
+    </GiftAnimationProvider>
   );
 };
 

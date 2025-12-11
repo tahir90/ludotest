@@ -10,6 +10,11 @@ declare module '*.svg' {
   export default content;
 }
 
+declare module '*.json' {
+  const value: any;
+  export default value;
+}
+
 declare type SOUND_NAME = "dice_roll" | "cheer" | "collide" | "game_start" | "sound_girl1" | "sound_girl2" | "sound_girl3" | "sound_girl0" | "home" | "home_win" | "pile_move" | "safe_spot" | "ui";
 declare type PLAYER_PIECE = { id: string; pos: number; travelCount: number; };
 
