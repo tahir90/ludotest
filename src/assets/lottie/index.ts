@@ -7,6 +7,8 @@ export const LOTTIE_ANIMATIONS = {
   GoldenDiamond: require('./golden diamond.json'),
   LoveSMS: require('./love SMS.json'),
   LoveDoor: require('./love door.json'),
+  Coffee: require('./coffee_transparent_optimized.json'),
+  LoveBlast: require('./loveblast_transparent_optimized.json'),
 } as const;
 
 export type LottieAnimationKey = keyof typeof LOTTIE_ANIMATIONS;

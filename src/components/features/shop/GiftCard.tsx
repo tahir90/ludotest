@@ -46,7 +46,10 @@ export const GiftCard: React.FC<GiftCardProps> = ({ gift, selected, onPress }) =
              gift.icon === 'crown' ? '👑' :
              gift.icon === 'diamond' ? '💎' :
              gift.icon === 'trophy' ? '🏆' :
-             gift.icon === 'mega_crown' ? '👑' : '🎁'}
+             gift.icon === 'mega_crown' ? '👑' :
+             gift.icon === 'coffee' ? '☕' :
+             gift.icon === 'loveblast' ? '💕' :
+             gift.icon === 'dragon' ? '🐉' : '🎁'}
           </Text>
           <Text style={styles.giftName}>{gift.name}</Text>
           <View style={styles.priceContainer}>

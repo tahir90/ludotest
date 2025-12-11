@@ -27,13 +27,15 @@ export const GIFT_CATALOG = {
     { id: 'rose', name: 'Rose', price: 10, animation: 'rose_anim', icon: 'rose', category: 'basic' as const, rarity: 'common' as const },
     { id: 'heart', name: 'Heart', price: 20, animation: 'heart_anim', icon: 'heart', category: 'basic' as const, rarity: 'common' as const },
     { id: 'star', name: 'Star', price: 30, animation: 'star_anim', icon: 'star', category: 'basic' as const, rarity: 'common' as const },
-    { id: 'crown', name: 'Crown', price: 50, animation: 'crown_anim', icon: 'crown', category: 'basic' as const, rarity: 'rare' as const }
+    { id: 'crown', name: 'Crown', price: 50, animation: 'crown_anim', icon: 'crown', category: 'basic' as const, rarity: 'rare' as const },
+    { id: 'coffee', name: 'Coffee', price: 40, animation: 'coffee_anim', icon: 'coffee', category: 'basic' as const, rarity: 'common' as const }
   ],
   premium: [
     { id: 'diamond', name: 'Diamond', price: 100, animation: 'diamond_anim', icon: 'diamond', category: 'premium' as const, rarity: 'epic' as const },
     { id: 'trophy', name: 'Trophy', price: 200, animation: 'trophy_anim', icon: 'trophy', category: 'premium' as const, rarity: 'epic' as const },
     { id: 'crown_king', name: 'Crown King', price: 300, animation: 'crown_king_anim', icon: 'crown_king', category: 'premium' as const, rarity: 'epic' as const },
-    { id: 'legendary', name: 'Legendary', price: 500, animation: 'legendary_anim', icon: 'legendary', category: 'premium' as const, rarity: 'legendary' as const }
+    { id: 'legendary', name: 'Legendary', price: 500, animation: 'legendary_anim', icon: 'dragon', category: 'premium' as const, rarity: 'legendary' as const },
+    { id: 'loveblast', name: 'Love Blast', price: 150, animation: 'loveblast_anim', icon: 'loveblast', category: 'premium' as const, rarity: 'epic' as const }
   ],
   ultra: [
     { id: 'mega_crown', name: 'Mega Crown', price: 1000, animation: 'mega_crown_anim', icon: 'mega_crown', category: 'ultra' as const, rarity: 'legendary' as const },

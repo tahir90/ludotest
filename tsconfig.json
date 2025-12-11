@@ -22,6 +22,7 @@
       "$navigation/*": ["src/navigation/*"],
       "$services/*": ["src/services/*"],
       "$types/*": ["src/types/*"],
+      "$utils/*": ["src/utils/*"],
     },
     "typeRoots": ["declaration.d.ts"]
   }

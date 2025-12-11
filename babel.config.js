@@ -16,6 +16,7 @@ module.exports = {
           '$navigation': './src/navigation',
           '$services': './src/services',
           '$types': './src/types',
+          '$utils': './src/utils',
         },
       },
     ],

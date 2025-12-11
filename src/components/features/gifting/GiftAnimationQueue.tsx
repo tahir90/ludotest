@@ -72,6 +72,7 @@ export const GiftAnimationQueue: React.FC<GiftAnimationQueueProps> = ({
       {/* Full-screen gift animation overlay */}
       {currentOverlay && (
         <GiftAnimationOverlay
+          key={currentOverlay.id} // Key ensures component remounts for each new gift
           gift={currentOverlay.gift}
           sender={currentOverlay.sender}
           receiver={currentOverlay.receiver}
