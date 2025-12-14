@@ -8,14 +8,10 @@ import { TabButton } from '$components/common';
 import { MicSlot } from '$components/features/clubs/MicSlot';
 import { ThresholdBar } from '$components/features/clubs/ThresholdBar';
 import { ChatMessage } from '$components/features/clubs/ChatMessage';
-import {
-  mockMyClub,
-  mockMicSlots,
-  mockClubMessages,
-  mockClubMembers,
-} from '$services/mockData';
 import { ClubMessage, MicSlot as MicSlotType } from '$types';
 import { navigate } from '$helpers/navigationUtils';
+import { clubService, ClubDetails } from '$services/api/club.service';
+import { useClubs } from '$hooks/useClubs';
 import {
   HeartIcon,
   UserPlusIcon,
@@ -37,34 +33,158 @@ const ClubRoomScreenContent: React.FC = () => {
   const route = useRoute();
   const { user: currentUser } = useUser();
   const { triggerGiftAnimation } = useGiftAnimation();
-  const clubId = (route.params as any)?.clubId || mockMyClub.id;
-  const club = mockMyClub;
-
+  const { myClub, members, messages: reduxMessages, micSlots: reduxMicSlots, setMessages, loadClubMembers, updateMicSlots } = useClubs();
+  const clubId = (route.params as any)?.clubId || myClub?.id;
+  
+  const [clubDetails, setClubDetails] = useState<ClubDetails | null>(null);
   const [activeTab, setActiveTab] = useState<'Chat' | 'Info'>('Chat');
-  const [micSlots, setMicSlots] = useState<MicSlotType[]>(mockMicSlots);
-  const [messages, setMessages] = useState<ClubMessage[]>(mockClubMessages);
+  const [micSlots, setMicSlots] = useState<MicSlotType[]>(reduxMicSlots || Array.from({ length: 10 }, (_, i) => ({
+    id: i + 1,
+    active: false,
+    locked: true,
+  })));
+  const [messages, setMessagesLocal] = useState<ClubMessage[]>(reduxMessages || []);
   const [messageText, setMessageText] = useState('');
   const [isMuted, setIsMuted] = useState(false); // Voice chat mute
   const [isMicOn, setIsMicOn] = useState(false);
   const [isMusicMuted, setIsMusicMuted] = useState(false);
   const [showGiftSheet, setShowGiftSheet] = useState(false);
+  const [loading, setLoading] = useState(false);
   const isFocused = useIsFocused();
 
-  const handleSendMessage = () => {
-    if (messageText.trim()) {
-      if (!currentUser) return;
+  // Load club details and data
+  useEffect(() => {
+    const loadClubData = async () => {
+      if (!clubId) return;
       
-      const newMessage: ClubMessage = {
-        id: `msg_${Date.now()}`,
-        userId: currentUser.id,
-        username: currentUser.username,
-        avatar: currentUser.avatar,
-        message: messageText,
-        timestamp: new Date().toISOString(),
-        type: 'text',
-      };
-      setMessages([...messages, newMessage]);
-      setMessageText('');
+      setLoading(true);
+      try {
+        // Load club details
+        const details = await clubService.getClubDetails(clubId);
+        setClubDetails(details);
+        
+        // Map ClubDetails to Club type
+        const mappedClub: any = {
+          id: details.id,
+          name: details.name,
+          avatar: details.avatarUrl || '',
+          description: details.description || '',
+          owner: details.owner.id,
+          ownerUsername: details.owner.username,
+          memberCount: details.memberCount,
+          maxMembers: details.maxMembers,
+          totalCrowns: 0, // Not in API - see API_GAPS.md
+          level: details.level,
+          privacy: details.privacy,
+          rules: details.rules,
+          language: details.language,
+          giftingThreshold: details.giftingThreshold?.target || 0,
+          currentThreshold: details.giftingThreshold?.current || 0,
+        };
+        
+        // Load members
+        const membersResponse = await clubService.getClubMembers(clubId);
+        const mappedMembers = membersResponse.data.map((member) => ({
+          userId: member.userId,
+          username: member.username,
+          avatar: member.avatarUrl, // Map avatarUrl to avatar
+          role: member.role,
+          joinedAt: member.joinedAt,
+          crownsContributed: member.contribution, // Map contribution to crownsContributed
+        }));
+        loadClubMembers(mappedMembers);
+        
+        // Load messages
+        const clubMessages = await clubService.getClubMessages(clubId, { limit: 50 });
+        const mappedMessages: ClubMessage[] = clubMessages.map((msg) => ({
+          id: msg.id,
+          userId: msg.userId,
+          username: msg.username,
+          avatar: msg.avatarUrl, // Map avatarUrl to avatar
+          message: msg.message,
+          timestamp: msg.timestamp,
+          type: msg.type || 'text',
+          giftId: (msg as any).giftId,
+        }));
+        setMessages(mappedMessages);
+        setMessagesLocal(mappedMessages);
+        
+        // Mic slots - API not available, use default empty slots
+        // See API_GAPS.md for required endpoint
+        const defaultMicSlots: MicSlotType[] = Array.from({ length: 10 }, (_, i) => ({
+          id: i + 1,
+          active: false,
+          locked: true,
+        }));
+        updateMicSlots(defaultMicSlots);
+        setMicSlots(defaultMicSlots);
+      } catch (error) {
+        console.error('Failed to load club data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (clubId) {
+      loadClubData();
+    }
+  }, [clubId]);
+
+  const club = clubDetails ? {
+    id: clubDetails.id,
+    name: clubDetails.name,
+    avatar: clubDetails.avatarUrl || '',
+    description: clubDetails.description || '',
+    owner: clubDetails.owner.id,
+    ownerUsername: clubDetails.owner.username,
+    memberCount: clubDetails.memberCount,
+    maxMembers: clubDetails.maxMembers,
+    totalCrowns: 0, // Not in API
+    level: clubDetails.level,
+    privacy: clubDetails.privacy,
+    rules: clubDetails.rules,
+    language: clubDetails.language,
+    giftingThreshold: clubDetails.giftingThreshold?.target || 0,
+    currentThreshold: clubDetails.giftingThreshold?.current || 0,
+  } : myClub;
+
+  const handleSendMessage = async () => {
+    if (messageText.trim() && clubId && currentUser) {
+      try {
+        // Send message via API
+        const sentMessage = await clubService.sendClubMessage(clubId, messageText, 'text');
+        
+        // Map API response to ClubMessage
+        const newMessage: ClubMessage = {
+          id: sentMessage.id || `msg_${Date.now()}`,
+          userId: currentUser.id,
+          username: currentUser.username,
+          avatar: currentUser.avatar,
+          message: sentMessage.message || messageText,
+          timestamp: sentMessage.timestamp || new Date().toISOString(),
+          type: 'text',
+        };
+        
+        // Update local state and Redux
+        const updatedMessages = [...messages, newMessage];
+        setMessagesLocal(updatedMessages);
+        setMessages(updatedMessages);
+        setMessageText('');
+      } catch (error) {
+        console.error('Failed to send message:', error);
+        // Fallback: add message locally if API fails
+        const newMessage: ClubMessage = {
+          id: `msg_${Date.now()}`,
+          userId: currentUser.id,
+          username: currentUser.username,
+          avatar: currentUser.avatar,
+          message: messageText,
+          timestamp: new Date().toISOString(),
+          type: 'text',
+        };
+        setMessagesLocal([...messages, newMessage]);
+        setMessageText('');
+      }
     }
   };
 

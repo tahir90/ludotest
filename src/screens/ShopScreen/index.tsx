@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import LinearGradient from 'react-native-linear-gradient';
@@ -12,14 +12,49 @@ import { CROWN_BUNDLES } from '$constants/config';
 import { CrownBundle } from '$types';
 import { navigate } from '$helpers/navigationUtils';
 import { useUser } from '$hooks/useUser';
+import { useShop } from '$hooks/useShop';
+import { shopService, ShopItem } from '$services/api/shop.service';
 
 const ShopScreen: React.FC = () => {
   const { crowns } = useUser();
+  const { bundles, loadBundles, setLoading } = useShop();
+  const [shopBundles, setShopBundles] = useState<CrownBundle[]>(CROWN_BUNDLES); // Fallback to constants
+  
+  // Load shop items from API
+  useEffect(() => {
+    const loadShopItems = async () => {
+      setLoading(true);
+      try {
+        const items = await shopService.getShopItems({ category: 'crowns' });
+        // Map ShopItem[] to CrownBundle[]
+        const mappedBundles: CrownBundle[] = items.map((item) => ({
+          id: item.id,
+          crowns: item.crownsAmount,
+          bonus: item.gemsAmount || 0, // Using gemsAmount as bonus if available
+          price: item.price,
+          currency: item.currency,
+          icon: '👑', // Not in ShopItem - see API_GAPS.md
+          bestValue: false, // Not in ShopItem - see API_GAPS.md
+        }));
+        if (mappedBundles.length > 0) {
+          setShopBundles(mappedBundles);
+          loadBundles(mappedBundles);
+        }
+      } catch (error) {
+        console.error('Failed to load shop items, using fallback:', error);
+        // Keep using CROWN_BUNDLES from constants as fallback
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadShopItems();
+  }, []);
   
   const handlePurchase = (bundle: CrownBundle) => {
-    // Mock purchase - will be replaced with real purchase flow
+    // Purchase flow will be handled by IAP manager
     console.log('Purchasing bundle:', bundle);
-    // Show purchase modal or navigate to payment
+    // TODO: Integrate with PurchaseManager
   };
 
   return (
@@ -75,7 +110,7 @@ const ShopScreen: React.FC = () => {
           </View>
           
           <View style={styles.bundlesGrid}>
-            {CROWN_BUNDLES.map((bundle) => (
+            {shopBundles.map((bundle) => (
               <BundleCard
                 key={bundle.id}
                 bundle={bundle}

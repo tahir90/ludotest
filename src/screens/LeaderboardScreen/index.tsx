@@ -8,34 +8,76 @@ import BottomNav from '$components/layout/BottomNav';
 import { TabButton } from '$components/common';
 import { LeaderboardRow } from '$components/features/leaderboard/LeaderboardRow';
 import { Top3Showcase } from '$components/features/leaderboard/Top3Showcase';
-import {
-  mockGlobalLeaderboard,
-  mockRegionalLeaderboard,
-} from '$services/mockData';
 import { LeaderboardEntry } from '$types';
 import { navigate } from '$helpers/navigationUtils';
+import { useLeaderboard } from '$hooks/useLeaderboard';
+import { useEffect } from 'react';
+import { leaderboardService } from '$services/api/leaderboard.service';
 
 const LeaderboardScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     'Global' | 'Regional' | 'Friends' | 'Clubs'
   >('Global');
+  const { fetchLeaderboard } = useLeaderboard();
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const getCurrentLeaderboard = (): LeaderboardEntry[] => {
-    switch (activeTab) {
-      case 'Global':
-        return mockGlobalLeaderboard.entries;
-      case 'Regional':
-        return mockRegionalLeaderboard.entries;
-      case 'Friends':
-        return mockGlobalLeaderboard.entries.slice(0, 20);
-      case 'Clubs':
-        return [];
-      default:
-        return [];
-    }
-  };
+  // Load leaderboard based on active tab
+  useEffect(() => {
+    const loadLeaderboard = async () => {
+      setLoading(true);
+      try {
+        if (activeTab === 'Global') {
+          const response = await leaderboardService.getGlobalLeaderboard({
+            type: 'crown',
+            timeframe: 'all_time',
+            limit: 100,
+          });
+          // Map API response to LeaderboardEntry[]
+          const mappedEntries: LeaderboardEntry[] = response.data.map((entry, index) => ({
+            id: entry.userId,
+            username: entry.username,
+            avatar: entry.avatarUrl || '', // Map avatarUrl to avatar - see API_GAPS.md
+            crowns: (entry as any).crowns || entry.score || 0, // API may use 'score' or 'crowns' - see API_GAPS.md
+            tier: entry.tier as any,
+            level: entry.level,
+            country: '', // Not in API - see API_GAPS.md
+            countryCode: undefined, // Not in API - see API_GAPS.md
+            rank: entry.rank || index + 1, // rank may not be in API - see API_GAPS.md
+            stats: { // Not in API - see API_GAPS.md
+              gamesPlayed: 0,
+              gamesWon: 0,
+              winRate: 0,
+              winStreak: 0,
+              totalCrownsEarned: 0,
+            },
+            isOnline: false, // Not in API - see API_GAPS.md
+          }));
+          setEntries(mappedEntries);
+        } else if (activeTab === 'Regional') {
+          // Regional leaderboard endpoint not implemented - see API_GAPS.md
+          console.warn('Regional leaderboard not implemented in API');
+          setEntries([]);
+        } else if (activeTab === 'Friends') {
+          // Friends leaderboard endpoint not implemented - see API_GAPS.md
+          console.warn('Friends leaderboard not implemented in API');
+          setEntries([]);
+        } else if (activeTab === 'Clubs') {
+          // Clubs leaderboard endpoint not implemented - see API_GAPS.md
+          console.warn('Clubs leaderboard not implemented in API');
+          setEntries([]);
+        }
+      } catch (error) {
+        console.error('Failed to load leaderboard:', error);
+        setEntries([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const entries = getCurrentLeaderboard();
+    loadLeaderboard();
+  }, [activeTab]);
+
   const top3 = entries.slice(0, 3);
   const rest = entries.slice(3);
 
@@ -88,18 +130,26 @@ const LeaderboardScreen: React.FC = () => {
 
         {/* Rest of Leaderboard */}
         <View style={styles.listContainer}>
-          {rest.length > 0 ? (
+          {loading ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>Loading leaderboard...</Text>
+            </View>
+          ) : rest.length > 0 ? (
             rest.map((entry, index) => (
               <LeaderboardRow
                 key={entry.id}
                 entry={entry}
-                rank={index + 4}
+                rank={entry.rank || index + 4}
                 onPress={() => handleEntryPress(entry)}
               />
             ))
           ) : (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No entries found</Text>
+              <Text style={styles.emptyText}>
+                {activeTab === 'Regional' || activeTab === 'Friends' || activeTab === 'Clubs'
+                  ? 'This leaderboard is not yet available'
+                  : 'No entries found'}
+              </Text>
             </View>
           )}
         </View>

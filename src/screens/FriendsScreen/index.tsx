@@ -7,28 +7,122 @@ import TopNav from '$components/layout/TopNav';
 import BottomNav from '$components/layout/BottomNav';
 import { TabButton, PrimaryButton } from '$components/common';
 import { FriendCard } from '$components/features/social/FriendCard';
-import { mockLeaderboard } from '$services/mockData';
 import { User } from '$types';
 import { navigate } from '$helpers/navigationUtils';
 import { MagnifyingGlassIcon, UserPlusIcon } from 'react-native-heroicons/solid';
+import { useSocial } from '$hooks/useSocial';
+import { useEffect } from 'react';
+import { userService } from '$services/api/user.service';
 
 const FriendsScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'Friends' | 'Requests' | 'Find'>('Friends');
   const [searchQuery, setSearchQuery] = useState('');
+  const { fetchFriends, getFriendRequests } = useSocial();
+  const [friends, setFriends] = useState<User[]>([]);
+  const [friendRequests, setFriendRequests] = useState<User[]>([]);
+  const [findUsers, setFindUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Mock friends data - in real app, this would come from Redux/API
-  const mockFriends: User[] = mockLeaderboard.slice(0, 10);
-  const mockRequests: User[] = mockLeaderboard.slice(10, 12);
-  const mockFind: User[] = mockLeaderboard.slice(12, 20);
+  // Fetch data based on active tab
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        if (activeTab === 'Friends') {
+          const friendsList = await fetchFriends();
+          // Map Friend[] to User[]
+          const mappedFriends: User[] = friendsList.map((friend) => ({
+            id: friend.userId,
+            username: friend.username,
+            avatar: friend.avatarUrl,
+            crowns: 0, // Not in Friend interface
+            tier: friend.tier as any,
+            level: friend.level,
+            country: '', // Not in Friend interface
+            countryCode: undefined,
+            stats: {
+              gamesPlayed: 0,
+              gamesWon: 0,
+              winRate: 0,
+              winStreak: 0,
+              totalCrownsEarned: 0,
+            },
+            isOnline: friend.isOnline,
+            lastActive: friend.lastSeenAt,
+          }));
+          setFriends(mappedFriends);
+        } else if (activeTab === 'Requests') {
+          const requests = await getFriendRequests('received');
+          // Map FriendRequest[] to User[]
+          const mappedRequests: User[] = requests.map((req) => ({
+            id: req.userId,
+            username: req.username,
+            avatar: req.avatarUrl,
+            crowns: 0, // Not in FriendRequest interface
+            tier: 'D' as any,
+            level: 0, // Not in FriendRequest interface
+            country: '',
+            countryCode: undefined,
+            stats: {
+              gamesPlayed: 0,
+              gamesWon: 0,
+              winRate: 0,
+              winStreak: 0,
+              totalCrownsEarned: 0,
+            },
+          }));
+          setFriendRequests(mappedRequests);
+        } else if (activeTab === 'Find') {
+          // Search users - only search if query is provided
+          if (searchQuery.trim()) {
+            try {
+              const searchResponse = await userService.searchUsers({ q: searchQuery, limit: 20 });
+              // Map UserProfile[] to User[]
+              const mappedUsers: User[] = (searchResponse.data || []).map((profile) => ({
+                id: profile.id,
+                username: profile.username,
+                avatar: profile.avatarUrl || '',
+                crowns: profile.crowns,
+                tier: profile.tier as any,
+                level: profile.level,
+                country: profile.country || '',
+                countryCode: profile.countryCode,
+                stats: {
+                  gamesPlayed: 0, // Not in UserProfile
+                  gamesWon: 0,
+                  winRate: 0,
+                  winStreak: 0,
+                  totalCrownsEarned: 0,
+                },
+                isOnline: profile.isOnline,
+              }));
+              setFindUsers(mappedUsers);
+            } catch (error) {
+              console.error('Failed to search users:', error);
+              setFindUsers([]);
+            }
+          } else {
+            setFindUsers([]);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [activeTab, searchQuery, fetchFriends, getFriendRequests]);
 
   const getCurrentData = (): User[] => {
     switch (activeTab) {
       case 'Friends':
-        return mockFriends;
+        return friends;
       case 'Requests':
-        return mockRequests;
+        return friendRequests;
       case 'Find':
-        return mockFind;
+        return findUsers;
       default:
         return [];
     }
@@ -37,7 +131,7 @@ const FriendsScreen: React.FC = () => {
   const filteredData = getCurrentData().filter(
     (user) =>
       user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.country.toLowerCase().includes(searchQuery.toLowerCase())
+      (user.country && user.country.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const handleChat = (friend: User) => {

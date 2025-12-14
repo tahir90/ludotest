@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Club, ClubMember, MicSlot, ClubMessage } from '$types';
-import { mockMyClub, mockClubMembers, mockMicSlots, mockClubMessages } from '$services/mockData';
 
 interface ClubState {
   myClub: Club | null;
@@ -15,14 +14,18 @@ interface ClubState {
 }
 
 const initialState: ClubState = {
-  myClub: mockMyClub,
+  myClub: null,
   clubs: [],
   currentClubRoom: null,
-  giftingThreshold: 15000,
-  currentThreshold: 8500,
-  members: mockClubMembers,
-  micSlots: mockMicSlots,
-  messages: mockClubMessages,
+  giftingThreshold: 0,
+  currentThreshold: 0,
+  members: [],
+  micSlots: Array.from({ length: 10 }, (_, i) => ({
+    id: i + 1,
+    active: false,
+    locked: true,
+  })),
+  messages: [],
   loading: false,
 };
 

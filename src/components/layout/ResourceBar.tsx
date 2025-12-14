@@ -11,6 +11,10 @@ import { Cog6ToothIcon, PlusIcon } from 'react-native-heroicons/solid';
 const ResourceBar: React.FC = () => {
   const { user: currentUser, crowns, level } = useUser();
   
+  // TODO: Get stars from UserProfile API - see API_GAPS.md
+  // Currently using level as fallback until stars field is added to API
+  const stars = (currentUser as any)?.stars || 0; // Will be 0 until API provides stars field
+  
   if (!currentUser) {
     return null;
   }
@@ -45,10 +49,10 @@ const ResourceBar: React.FC = () => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
       >
-        {/* Level/XP */}
+        {/* Stars Count */}
         <View style={styles.levelContainer}>
           <Text style={styles.levelIcon}>⭐</Text>
-          <Text style={styles.levelText}>{level}</Text>
+          <Text style={styles.levelText}>{stars || level}</Text>
         </View>
 
         {/* Profile Avatar */}

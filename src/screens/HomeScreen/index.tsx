@@ -21,6 +21,7 @@ import { StreakSection } from '$components/features/home/StreakSection';
 import { GameModeCard } from '$components/features/home/GameModeCard';
 import { QuickActionCard } from '$components/features/home/QuickActionCard';
 import { useUser } from '$hooks/useUser';
+import { notificationService } from '$services/api/notification.service';
 import {
   TrophyIcon,
   LockClosedIcon,
@@ -38,9 +39,48 @@ const HomeScreen = () => {
   const withAnim = useRef(new Animated.Value(-DEVICE_WIDTH)).current;
   const scaleXAnim = useRef(new Animated.Value(-1)).current;
 
-  const [streakProgress] = useState(0);
-  const [streakTarget] = useState(100);
-  const { user: currentUser } = useUser();
+  const { user: currentUser, stats } = useUser();
+  const [streakProgress, setStreakProgress] = useState(0);
+  const [streakTarget, setStreakTarget] = useState(100);
+  const [streakTimeRemaining, setStreakTimeRemaining] = useState('2d 0h');
+  const [megaWinTimer, setMegaWinTimer] = useState('11h 23m');
+  const [notificationCounts, setNotificationCounts] = useState({
+    video: 0,
+    dragon: 0,
+    shop: 0,
+    friends: 0,
+    chest: 0,
+  });
+  
+  // Load streak data from user stats
+  useEffect(() => {
+    if (stats) {
+      // Use winStreak from stats if available
+      // TODO: Get streak target and time remaining from API - see API_GAPS.md
+      setStreakProgress(stats.winStreak || 0);
+    }
+  }, [stats]);
+
+  // Load notification counts
+  useEffect(() => {
+    const loadNotificationCounts = async () => {
+      try {
+        const counts = await notificationService.getNotificationCounts();
+        setNotificationCounts({
+          video: counts.byType.video || 0,
+          dragon: counts.byType.dragon || 0,
+          shop: counts.byType.shop || 0,
+          friends: counts.byType.friends || 0,
+          chest: counts.byType.chest || 0,
+        });
+      } catch (error) {
+        console.error('Failed to load notification counts:', error);
+        // Keep default zero values
+      }
+    };
+
+    loadNotificationCounts();
+  }, []);
 
   useEffect(() => {
     if (isFocused) {
@@ -185,14 +225,14 @@ const HomeScreen = () => {
         <StreakSection
           currentStreak={streakProgress}
           targetStreak={streakTarget}
-          timeRemaining="2d 0h"
+          timeRemaining={streakTimeRemaining}
         />
 
         {/* Quick Actions Row */}
         <View style={styles.quickActionsRow}>
           <QuickActionCard
             title=""
-            value="3 1 2"
+            value={stats?.gamesWon?.toLocaleString() || '0'}
             icon={<TrophyIcon size={30} color={COLORS.gold} />}
             onPress={() => navigate('LeaderboardScreen', {})}
           />
@@ -202,7 +242,7 @@ const HomeScreen = () => {
             icon={<TrophyIcon size={30} color={COLORS.gold} />}
             onPress={handleComingSoon}
             locked={true}
-            timer="11h 23m"
+            timer={megaWinTimer}
           />
         </View>
 
@@ -271,21 +311,35 @@ const HomeScreen = () => {
         <View style={styles.activityButtons}>
           <Pressable style={styles.activityButton} onPress={() => navigate('HomeScreen', {})}>
             <VideoCameraIcon size={24} color={COLORS.white} />
-            <View style={styles.activityBadge}>
-              <Text style={styles.activityBadgeText}>6</Text>
-            </View>
+            {notificationCounts.video > 0 && (
+              <View style={styles.activityBadge}>
+                <Text style={styles.activityBadgeText}>{notificationCounts.video}</Text>
+              </View>
+            )}
           </Pressable>
           <Pressable style={styles.activityButton} onPress={() => navigate('ChestScreen', {})}>
             <CubeIcon size={24} color={COLORS.white} />
+            {notificationCounts.chest > 0 && (
+              <View style={styles.activityBadge}>
+                <Text style={styles.activityBadgeText}>{notificationCounts.chest}</Text>
+              </View>
+            )}
           </Pressable>
           <Pressable style={styles.activityButton} onPress={() => navigate('ClubsScreen', {})}>
             <Text style={styles.activityIcon}>🦖</Text>
-            <View style={styles.activityBadge}>
-              <Text style={styles.activityBadgeText}>6</Text>
-            </View>
+            {notificationCounts.dragon > 0 && (
+              <View style={styles.activityBadge}>
+                <Text style={styles.activityBadgeText}>{notificationCounts.dragon}</Text>
+              </View>
+            )}
           </Pressable>
           <Pressable style={styles.activityButton} onPress={() => navigate('FriendsScreen', {})}>
             <UserPlusIcon size={24} color={COLORS.white} />
+            {notificationCounts.friends > 0 && (
+              <View style={styles.activityBadge}>
+                <Text style={styles.activityBadgeText}>{notificationCounts.friends}</Text>
+              </View>
+            )}
           </Pressable>
         </View>
       </ScrollView>

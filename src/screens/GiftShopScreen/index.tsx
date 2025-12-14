@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { COLORS } from '$constants/colors';
@@ -11,6 +11,7 @@ import { PrimaryButton } from '$components/common';
 import { GIFT_CATALOG, QUANTITY_OPTIONS } from '$constants/config';
 import { Gift } from '$types';
 import { useUser } from '$hooks/useUser';
+import { giftingService, Gift as ApiGift } from '$services/api/gifting.service';
 
 const GiftShopScreen: React.FC = () => {
   const { crowns } = useUser();
@@ -18,16 +19,74 @@ const GiftShopScreen: React.FC = () => {
   const [selectedGift, setSelectedGift] = useState<string | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
   const [selectedRecipient, setSelectedRecipient] = useState<string>('Select Friends');
+  const [gifts, setGifts] = useState<Gift[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Load gift catalog from API
+  useEffect(() => {
+    const loadGiftCatalog = async () => {
+      setLoading(true);
+      try {
+        const catalog = await giftingService.getGiftCatalog();
+        
+        // Map API Gift[] to app Gift[] based on category
+        let mappedGifts: Gift[] = [];
+        if (selectedCategory === 'Classic') {
+          mappedGifts = catalog.categories.basic
+            .concat(catalog.categories.premium)
+            .map((gift: ApiGift) => ({
+              id: gift.id,
+              name: gift.name,
+              category: gift.category,
+              price: gift.price,
+              animation: gift.animationUrl || '',
+              icon: gift.icon,
+              rarity: gift.rarity,
+            }));
+        } else {
+          mappedGifts = catalog.categories.ultra.map((gift: ApiGift) => ({
+            id: gift.id,
+            name: gift.name,
+            category: gift.category,
+            price: gift.price,
+            animation: gift.animationUrl || '',
+            icon: gift.icon,
+            rarity: gift.rarity,
+          }));
+        }
+        
+        if (mappedGifts.length > 0) {
+          setGifts(mappedGifts);
+        } else {
+          // Fallback to constants
+          if (selectedCategory === 'Classic') {
+            setGifts([...GIFT_CATALOG.basic, ...GIFT_CATALOG.premium]);
+          } else {
+            setGifts(GIFT_CATALOG.ultra);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load gift catalog, using fallback:', error);
+        // Fallback to constants
+        if (selectedCategory === 'Classic') {
+          setGifts([...GIFT_CATALOG.basic, ...GIFT_CATALOG.premium]);
+        } else {
+          setGifts(GIFT_CATALOG.ultra);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadGiftCatalog();
+  }, [selectedCategory]);
 
   const getGiftsForCategory = (): Gift[] => {
-    if (selectedCategory === 'Classic') {
-      return [...GIFT_CATALOG.basic, ...GIFT_CATALOG.premium];
-    }
-    return GIFT_CATALOG.ultra;
+    return gifts;
   };
 
-  const gifts = getGiftsForCategory();
-  const selectedGiftData = gifts.find(g => g.id === selectedGift);
+  const currentGifts = getGiftsForCategory();
+  const selectedGiftData = currentGifts.find(g => g.id === selectedGift);
   const totalCost = selectedGiftData ? selectedGiftData.price * selectedQuantity : 0;
 
   const handleSend = () => {
@@ -90,14 +149,24 @@ const GiftShopScreen: React.FC = () => {
 
         {/* Gift Grid */}
         <View style={styles.giftsGrid}>
-          {gifts.map((gift) => (
-            <GiftCard
-              key={gift.id}
-              gift={gift}
-              selected={selectedGift === gift.id}
-              onPress={() => setSelectedGift(gift.id)}
-            />
-          ))}
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Loading gifts...</Text>
+            </View>
+          ) : currentGifts.length > 0 ? (
+            currentGifts.map((gift) => (
+              <GiftCard
+                key={gift.id}
+                gift={gift}
+                selected={selectedGift === gift.id}
+                onPress={() => setSelectedGift(gift.id)}
+              />
+            ))
+          ) : (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>No gifts available</Text>
+            </View>
+          )}
         </View>
 
         {/* Quantity Selector */}

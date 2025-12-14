@@ -23,6 +23,7 @@
       "$services/*": ["src/services/*"],
       "$types/*": ["src/types/*"],
       "$utils/*": ["src/utils/*"],
+      "$config/*": ["src/config/*"],
     },
     "typeRoots": ["declaration.d.ts"]
   }

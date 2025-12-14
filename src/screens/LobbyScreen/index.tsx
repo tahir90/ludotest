@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { COLORS } from '$constants/colors';
@@ -7,9 +7,9 @@ import TopNav from '$components/layout/TopNav';
 import { PlayerSlot } from '$components/features/lobby/PlayerSlot';
 import { PrimaryButton } from '$components/common';
 import { useUser } from '$hooks/useUser';
-import { mockLeaderboard } from '$services/mockData';
 import { User } from '$types';
 import { navigate } from '$helpers/navigationUtils';
+import { useGame } from '$hooks/useGame';
 import { CrownCard } from '$components/common';
 import { ChatMessage } from '$components/features/clubs/ChatMessage';
 import { ClubMessage } from '$types';
@@ -23,14 +23,30 @@ interface PlayerSlotData {
 
 const LobbyScreen: React.FC = () => {
   const { user: currentUser } = useUser();
+  const { gameState } = useGame();
   const [playerSlots, setPlayerSlots] = useState<PlayerSlotData[]>([
     { player: currentUser || undefined, ready: false, isHost: true },
-    { player: mockLeaderboard[0], ready: true, isHost: false },
+    { player: undefined, ready: false, isHost: false },
     { player: undefined, ready: false, isHost: false },
     { player: undefined, ready: false, isHost: false },
   ]);
   const [isReady, setIsReady] = useState(false);
   const [entryFee] = useState(50);
+  
+  // Load players from game state if available
+  useEffect(() => {
+    // Game state should contain player information when in lobby
+    // For now, initialize with current user only
+    // TODO: Load from game state API when available
+    if (currentUser) {
+      setPlayerSlots([
+        { player: currentUser, ready: false, isHost: true },
+        { player: undefined, ready: false, isHost: false },
+        { player: undefined, ready: false, isHost: false },
+        { player: undefined, ready: false, isHost: false },
+      ]);
+    }
+  }, [currentUser]);
   const [lobbyChat, setLobbyChat] = useState<ClubMessage[]>([
     {
       id: 'lobby_msg_1',

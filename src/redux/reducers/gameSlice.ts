@@ -1,9 +1,86 @@
 import { initialState } from '$redux/initialState';
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { gameService, GameSession, JoinGameResponse, GameState, RollDiceResponse, MovePieceResponse } from '$services/api/game.service';
+
+// Extend initial state with online game state
+const extendedInitialState = {
+    ...initialState,
+    sessionId: null as string | null,
+    serverGameState: null as GameState | null,
+    isOnline: false,
+    syncStatus: 'idle' as 'idle' | 'syncing' | 'error',
+};
+
+// Async thunks for online game sync
+export const createGameSession = createAsyncThunk(
+    'game/createGameSession',
+    async (config: {
+        mode: '2_player' | '4_player' | 'private' | 'vip';
+        entryFee: number;
+        isPrivate?: boolean;
+        invitedPlayers?: string[];
+        password?: string;
+    }, { rejectWithValue }) => {
+        try {
+            const session = await gameService.createGame(config);
+            return session;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to create game session');
+        }
+    }
+);
+
+export const joinExistingGame = createAsyncThunk(
+    'game/joinExistingGame',
+    async ({ gameId, options }: { gameId: string; options?: { joinCode?: string; password?: string } }, { rejectWithValue }) => {
+        try {
+            const response = await gameService.joinGame(gameId, options);
+            return { gameId, ...response };
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to join game');
+        }
+    }
+);
+
+export const submitDiceRoll = createAsyncThunk(
+    'game/submitDiceRoll',
+    async (gameId: string, { rejectWithValue }) => {
+        try {
+            const response = await gameService.rollDice(gameId);
+            return response;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to roll dice');
+        }
+    }
+);
+
+export const submitMove = createAsyncThunk(
+    'game/submitMove',
+    async ({ gameId, move }: { gameId: string; move: { pieceId: number; toPosition: number } }, { rejectWithValue }) => {
+        try {
+            const response = await gameService.movePiece(gameId, move);
+            return response;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to move piece');
+        }
+    }
+);
+
+export const syncGameState = createAsyncThunk(
+    'game/syncGameState',
+    async (gameId: string, { rejectWithValue }) => {
+        try {
+            const state = await gameService.getGameState(gameId);
+            return state;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to sync game state');
+        }
+    }
+);
 
 const gameSlice = createSlice({
     name: 'game',
-    initialState: initialState,
+    initialState: extendedInitialState,
     reducers: {
         resetGame: (state) => {
             Object.assign(state, initialState);
@@ -117,7 +194,65 @@ const gameSlice = createSlice({
                     }
                 }
             }
-        }
+        },
+        setGameSession: (state, action: PayloadAction<{ gameId: string; sessionId?: string }>) => {
+            state.sessionId = action.payload.gameId;
+            state.isOnline = true;
+        },
+        clearGameSession: (state) => {
+            state.sessionId = null;
+            state.serverGameState = null;
+            state.isOnline = false;
+            state.syncStatus = 'idle';
+        },
+        setServerGameState: (state, action: PayloadAction<GameState>) => {
+            state.serverGameState = action.payload;
+        },
+        setSyncStatus: (state, action: PayloadAction<'idle' | 'syncing' | 'error'>) => {
+            state.syncStatus = action.payload;
+        },
+    },
+    extraReducers: (builder) => {
+        // Create game session
+        builder
+            .addCase(createGameSession.pending, (state) => {
+                state.syncStatus = 'syncing';
+            })
+            .addCase(createGameSession.fulfilled, (state, action) => {
+                state.sessionId = action.payload.gameId;
+                state.isOnline = true;
+                state.syncStatus = 'idle';
+            })
+            .addCase(createGameSession.rejected, (state) => {
+                state.syncStatus = 'error';
+            });
+
+        // Join existing game
+        builder
+            .addCase(joinExistingGame.pending, (state) => {
+                state.syncStatus = 'syncing';
+            })
+            .addCase(joinExistingGame.fulfilled, (state, action) => {
+                state.sessionId = action.payload.gameId;
+                state.isOnline = true;
+                state.syncStatus = 'idle';
+            })
+            .addCase(joinExistingGame.rejected, (state) => {
+                state.syncStatus = 'error';
+            });
+
+        // Sync game state
+        builder
+            .addCase(syncGameState.pending, (state) => {
+                state.syncStatus = 'syncing';
+            })
+            .addCase(syncGameState.fulfilled, (state, action) => {
+                state.serverGameState = action.payload;
+                state.syncStatus = 'idle';
+            })
+            .addCase(syncGameState.rejected, (state) => {
+                state.syncStatus = 'error';
+            });
     }
 })
 
@@ -132,6 +267,10 @@ export const {
     announceWinner,
     setTotalPlayers,
     updatePlayerChance,
-    updatePlayerPieceValue
+    updatePlayerPieceValue,
+    setGameSession,
+    clearGameSession,
+    setServerGameState,
+    setSyncStatus
 } = gameSlice.actions;
 export const gameReducer = gameSlice.reducer;

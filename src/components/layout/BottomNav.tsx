@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { COLORS } from '$constants/colors';
@@ -13,25 +13,50 @@ import {
   CubeIcon,
 } from 'react-native-heroicons/solid';
 import { CounterBadge } from '$components/common/badges/CounterBadge';
+import { notificationService } from '$services/api/notification.service';
 
 interface NavItem {
   name: string;
   icon: React.ComponentType<any>;
   route: string;
-  badge?: number;
+  badgeKey?: 'shop' | 'friends' | 'chest';
 }
 
 const navItems: NavItem[] = [
-  { name: 'Shop', icon: ShoppingCartIcon, route: 'ShopScreen', badge: 1 },
-  { name: 'Friends', icon: UserGroupIcon, route: 'FriendsScreen', badge: 1 },
+  { name: 'Shop', icon: ShoppingCartIcon, route: 'ShopScreen', badgeKey: 'shop' },
+  { name: 'Friends', icon: UserGroupIcon, route: 'FriendsScreen', badgeKey: 'friends' },
   { name: 'Home', icon: HomeIcon, route: 'HomeScreen' },
   { name: 'Clubs', icon: MicrophoneIcon, route: 'ClubsScreen' },
-  { name: 'Chest', icon: CubeIcon, route: 'ChestScreen', badge: 1 },
+  { name: 'Chest', icon: CubeIcon, route: 'ChestScreen', badgeKey: 'chest' },
 ];
 
 const BottomNav: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const [notificationCounts, setNotificationCounts] = useState({
+    shop: 0,
+    friends: 0,
+    chest: 0,
+  });
+
+  // Load notification counts
+  useEffect(() => {
+    const loadNotificationCounts = async () => {
+      try {
+        const counts = await notificationService.getNotificationCounts();
+        setNotificationCounts({
+          shop: counts.byType.shop || 0,
+          friends: counts.byType.friends || 0,
+          chest: counts.byType.chest || 0,
+        });
+      } catch (error) {
+        console.error('Failed to load notification counts:', error);
+        // Keep default zero values
+      }
+    };
+
+    loadNotificationCounts();
+  }, []);
 
   const handleNavigate = (routeName: string) => {
     navigate(routeName as any, {});
@@ -66,8 +91,8 @@ const BottomNav: React.FC = () => {
                   size={isHome ? 28 : 24}
                   color={active ? COLORS.gold : COLORS.white + '80'}
                 />
-                {item.badge && item.badge > 0 && (
-                  <CounterBadge count={item.badge} style={styles.badge} />
+                {item.badgeKey && notificationCounts[item.badgeKey] > 0 && (
+                  <CounterBadge count={notificationCounts[item.badgeKey]} style={styles.badge} />
                 )}
               </View>
             </TouchableOpacity>

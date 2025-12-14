@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import reduxStorage from "./storage";
 import { FLUSH, PAUSE, PERSIST, persistReducer, persistStore, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
 import RootReducer from "./root-reducer";
+import { cacheMiddleware } from "./middleware/cacheMiddleware";
 
 const persistConfig = {
     key: 'root',
@@ -17,7 +18,7 @@ export const store = configureStore({
         serializableCheck: {
             ignoreActions: [FLUSH, REHYDRATE, REGISTER, PAUSE, PURGE, PERSIST]
         }
-    })
+    }).concat(cacheMiddleware)
 })
 
 export type RootState = ReturnType<typeof store.getState>;

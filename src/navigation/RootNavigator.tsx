@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LudoBoardScreen from '$screens/LudoBoardScreen';
 import SplashScreen from '$screens/SplashScreen';
+import LoginScreen from '$screens/LoginScreen';
 import HomeScreen from '$screens/HomeScreen';
 import ShopScreen from '$screens/ShopScreen';
 import GiftShopScreen from '$screens/GiftShopScreen';
@@ -34,6 +35,7 @@ const RootNavigator = () => {
             }}
         >
             <Stack.Screen name='SplashScreen' component={SplashScreen} options={{ gestureEnabled: false }} />
+            <Stack.Screen name='LoginScreen' component={LoginScreen} options={{ gestureEnabled: false }} />
             <Stack.Screen name='HomeScreen' component={HomeScreen} options={{ gestureEnabled: false }} />
             <Stack.Screen name='LudoBoardScreen' component={LudoBoardScreen} />
             

@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { CrownBundle, Purchase } from '$types';
 import { CROWN_BUNDLES } from '$constants/config';
-import { mockPurchaseHistory } from '$services/mockData';
 
 interface ShopState {
   bundles: CrownBundle[];
@@ -10,8 +9,8 @@ interface ShopState {
 }
 
 const initialState: ShopState = {
-  bundles: CROWN_BUNDLES,
-  purchaseHistory: mockPurchaseHistory,
+  bundles: CROWN_BUNDLES, // Keep as fallback until API provides bundles
+  purchaseHistory: [],
   loading: false,
 };
 

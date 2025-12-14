@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import LinearGradient from 'react-native-linear-gradient';
@@ -8,18 +8,70 @@ import TopNav from '$components/layout/TopNav';
 import BottomNav from '$components/layout/BottomNav';
 import { TabButton, PrimaryButton } from '$components/common';
 import { UserAvatar, TierBadge, CrownCard } from '$components/common';
-import { mockCrownKing, mockWinKing } from '$services/mockData';
 import { CrownKing } from '$types';
 import LottieView from 'lottie-react-native';
 import { ANIMATATIONS } from '$assets/animation';
+import { useLeaderboard } from '$hooks/useLeaderboard';
+import { leaderboardService } from '$services/api/leaderboard.service';
 
 const CrownKingScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'Crown King' | 'Win King'>(
     'Crown King'
   );
+  const [crownKing, setCrownKing] = useState<CrownKing | null>(null);
+  const [winKing, setWinKing] = useState<CrownKing | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const currentKing: CrownKing =
-    activeTab === 'Crown King' ? mockCrownKing : mockWinKing;
+  // Load crown king/queen data
+  useEffect(() => {
+    const loadCrownKingQueen = async () => {
+      setLoading(true);
+      try {
+        const response = await leaderboardService.getCrownKingQueen();
+        
+        // Map API response to CrownKing
+        const mappedCrownKing: CrownKing = {
+          userId: response.crownKing.userId,
+          username: response.crownKing.username,
+          avatar: response.crownKing.avatarUrl || '', // Map avatarUrl to avatar
+          crowns: response.crownKing.totalCrowns,
+          tier: response.crownKing.tier,
+          wins: 0, // Not in API - see API_GAPS.md
+          winRate: 0, // Not in API - see API_GAPS.md
+          type: 'crown',
+          period: 'weekly', // Not in API - see API_GAPS.md
+          startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // Not in API
+          endDate: new Date().toISOString(), // Not in API
+        };
+        
+        const mappedWinKing: CrownKing = {
+          userId: response.crownQueen.userId,
+          username: response.crownQueen.username,
+          avatar: response.crownQueen.avatarUrl || '',
+          crowns: response.crownQueen.totalCrowns,
+          tier: response.crownQueen.tier,
+          wins: 0, // Not in API - see API_GAPS.md
+          winRate: 0, // Not in API - see API_GAPS.md
+          type: 'win',
+          period: 'weekly',
+          startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          endDate: new Date().toISOString(),
+        };
+        
+        setCrownKing(mappedCrownKing);
+        setWinKing(mappedWinKing);
+      } catch (error) {
+        console.error('Failed to load crown king/queen:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCrownKingQueen();
+  }, []);
+
+  const currentKing: CrownKing | null =
+    activeTab === 'Crown King' ? crownKing : winKing;
 
   const formatNumber = (num: number): string => {
     if (num >= 1000000) {
@@ -68,46 +120,54 @@ const CrownKingScreen: React.FC = () => {
                 <Text style={styles.crownIcon}>👑</Text>
               </View>
 
-              {/* Royal Avatar */}
-              <UserAvatar
-                username={currentKing.username}
-                avatar={currentKing.avatar}
-                tier={currentKing.tier as any}
-                size={120}
-                showTier={true}
-              />
+              {loading ? (
+                <Text style={styles.loadingText}>Loading...</Text>
+              ) : currentKing ? (
+                <>
+                  {/* Royal Avatar */}
+                  <UserAvatar
+                    username={currentKing.username}
+                    avatar={currentKing.avatar}
+                    tier={currentKing.tier as any}
+                    size={120}
+                    showTier={true}
+                  />
 
-              {/* Royal Name */}
-              <Text style={styles.royalName}>{currentKing.username}</Text>
-              <Text style={styles.royalTitle}>
-                {activeTab === 'Crown King' ? 'Crown King' : 'Win King'}
-              </Text>
+                  {/* Royal Name */}
+                  <Text style={styles.royalName}>{currentKing.username}</Text>
+                  <Text style={styles.royalTitle}>
+                    {activeTab === 'Crown King' ? 'Crown King' : 'Win King'}
+                  </Text>
 
-              {/* Royal Stats */}
-              <View style={styles.statsContainer}>
-                <View style={styles.statItem}>
-                  <Text style={styles.statLabel}>
-                    {activeTab === 'Crown King' ? 'Crowns' : 'Wins'}
-                  </Text>
-                  <Text style={styles.statValue}>
-                    {activeTab === 'Crown King'
-                      ? formatNumber(currentKing.crowns)
-                      : currentKing.wins?.toLocaleString()}
-                  </Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Text style={styles.statLabel}>Tier</Text>
-                  <TierBadge tier={currentKing.tier as any} size="large" />
-                </View>
-                {currentKing.winRate && (
-                  <View style={styles.statItem}>
-                    <Text style={styles.statLabel}>Win Rate</Text>
-                    <Text style={styles.statValue}>
-                      {currentKing.winRate.toFixed(1)}%
-                    </Text>
+                  {/* Royal Stats */}
+                  <View style={styles.statsContainer}>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statLabel}>
+                        {activeTab === 'Crown King' ? 'Crowns' : 'Wins'}
+                      </Text>
+                      <Text style={styles.statValue}>
+                        {activeTab === 'Crown King'
+                          ? formatNumber(currentKing.crowns)
+                          : currentKing.wins?.toLocaleString() || '0'}
+                      </Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statLabel}>Tier</Text>
+                      <TierBadge tier={currentKing.tier as any} size="large" />
+                    </View>
+                    {currentKing.winRate && currentKing.winRate > 0 && (
+                      <View style={styles.statItem}>
+                        <Text style={styles.statLabel}>Win Rate</Text>
+                        <Text style={styles.statValue}>
+                          {currentKing.winRate.toFixed(1)}%
+                        </Text>
+                      </View>
+                    )}
                   </View>
-                )}
-              </View>
+                </>
+              ) : (
+                <Text style={styles.loadingText}>No data available</Text>
+              )}
 
               {/* Challenge Button */}
               <PrimaryButton
@@ -280,6 +340,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Philosopher-Bold',
     marginTop: 10,
     marginBottom: 10,
+  },
+  loadingText: {
+    color: COLORS.lightText,
+    fontSize: RFValue(18),
+    fontFamily: 'Philosopher-Bold',
+    textAlign: 'center',
+    padding: 40,
   },
 });
 

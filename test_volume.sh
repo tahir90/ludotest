@@ -48,3 +48,5 @@ echo "   2. Run this script to change volume"
 echo "   3. Check app logs: adb logcat | grep -i volume"
 echo "   4. The app should detect the volume change when you navigate between screens"
 
+
+

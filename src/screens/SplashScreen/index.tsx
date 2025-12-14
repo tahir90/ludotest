@@ -5,17 +5,32 @@ import { styles } from './styles'
 import { IMAGES } from '$assets/images'
 import { COLORS } from '$constants/colors'
 import { resetAndNavigate } from '$helpers/navigationUtils'
+import { useAuth } from '$hooks/useAuth'
 
 const SplashScreen: React.FC = () => {
 
   const [isStop] = useState(false);
   const scale = new Animated.Value(1);
+  const { checkAuth, isAuthenticated, loading } = useAuth();
 
   useEffect(() => {
-    setTimeout(() => {
-      resetAndNavigate('HomeScreen');
-    },1500);
-  },[]);
+    const initializeApp = async () => {
+      // Wait for splash animation (1.5 seconds)
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Check authentication status
+      const authenticated = await checkAuth();
+      
+      // Navigate based on authentication status
+      if (authenticated) {
+        resetAndNavigate('HomeScreen');
+      } else {
+        resetAndNavigate('LoginScreen');
+      }
+    };
+
+    initializeApp();
+  }, [checkAuth]);
 
   useEffect(() => {
     const breathingAnimation = Animated.loop(
